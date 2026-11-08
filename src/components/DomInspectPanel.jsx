@@ -172,3 +172,4 @@ Instruction: ${prompt.trim()}`;
 }
 
 export default DomInspectPanel;
+

@@ -1166,29 +1166,40 @@ Always provide complete, valid code so it can be automatically written to disk.`
           </div>
 
           {/* ACTIVE WORKBENCH STAGE CONTENT */}
-          <div className="preview-viewport-container" style={{ position: 'relative' }}>
+          <div className="preview-viewport-container">
             {/* 1. LIVE PREVIEW */}
             {activeTab === 'preview' && (
-              <>
-                {/* Swarm Multi-Agent Rebuild Indicator */}
-                {isGenerating && (
-                  <div className="swarm-indicator">
-                    <Sparkles size={12} />
-                    <span>Swarm Agent Active: {statusNote || 'Applying AST delta'}</span>
-                  </div>
-                )}
-                {/* Swarm Multiplayer Cursors Canvas Overlay */}
-                <SwarmRebuildOverlay 
-                  active={isGenerating || swarmActive} 
-                  currentFile={statusNote || 'components/Hero.tsx'} 
-                />
+              <div 
+                className={`preview-frame-wrapper ${viewport}`}
+                style={{ 
+                  position: 'relative', 
+                  width: viewport === 'mobile' ? '390px' : viewport === 'tablet' ? '768px' : '100%', 
+                  height: viewport === 'desktop' ? '100%' : '95%'
+                }}
+              >
+                {/* 1. Ifame Surface */}
                 <iframe 
                   ref={iframeRef}
                   src={previewUrl}
                   className={`preview-frame ${viewport}`}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
                   title="Live Preview"
                 />
-              </>
+
+                {/* 2. Swarm Multi-Agent Rebuild Indicator */}
+                {(isGenerating || swarmActive) && (
+                  <div className="swarm-indicator">
+                    <Sparkles size={12} />
+                    <span>Swarm Active: {statusNote || '4 Autonomous Agents Simulating Live Changes'}</span>
+                  </div>
+                )}
+
+                {/* 3. Swarm Multiplayer Cursors Canvas Overlay (MOUNTED ON TOP OF IFRAME) */}
+                <SwarmRebuildOverlay 
+                  active={isGenerating || swarmActive} 
+                  currentFile={statusNote || 'KovaHero.tsx'} 
+                />
+              </div>
             )}
 
             {/* 2. CODE CANVAS & FILE BROWSER */}
