@@ -170,3 +170,4 @@ export function SwarmRebuildOverlay({ active = false, currentFile = null, classN
 }
 
 export default SwarmRebuildOverlay;
+

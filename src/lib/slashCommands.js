@@ -55,6 +55,34 @@ export const SLASH_COMMANDS = [
     action: 'export-zip'
   },
   {
+    name: '/inspect',
+    description: 'Switch to interactive DOM Element Inspector to target and redesign homepage elements',
+    example: '/inspect',
+    category: 'Workbench',
+    action: 'open-inspect'
+  },
+  {
+    name: '/projects',
+    description: 'Open Projects Manager to switch workspaces, clone from GitHub, or scaffold sites',
+    example: '/projects',
+    category: 'Workbench',
+    action: 'open-projects'
+  },
+  {
+    name: '/settings',
+    description: 'Configure API keys, local model endpoints (LM Studio, Ollama), and WordPress CMS',
+    example: '/settings',
+    category: 'Workbench',
+    action: 'open-settings'
+  },
+  {
+    name: '/magic',
+    description: 'Open Kova Magic Polish drawer to apply aesthetic archetypes, glows, and micro-interactions',
+    example: '/magic',
+    category: 'Design',
+    action: 'open-magic'
+  },
+  {
     name: '/modularize',
     description: 'Refactor monolithic code into clean modular components in src/components/',
     example: '/modularize Extract Navbar, Hero, and Features into separate components',

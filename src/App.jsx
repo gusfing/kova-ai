@@ -4,7 +4,8 @@ import {
   Sparkles, Terminal, Globe, RefreshCw, Smartphone, Tablet, Monitor, 
   Send, Layers, Server, Cpu, Database, CheckCircle2, AlertCircle, FileCode, Play, Bot,
   ChevronDown, ChevronRight, BrainCircuit, Activity, Wrench, ShieldCheck, X, Link, Radio,
-  Zap, Code2, Check, Settings, ExternalLink, Download, GitCompare, Eye, SlidersHorizontal
+  Zap, Code2, Check, Settings, ExternalLink, Download, GitCompare, Eye, SlidersHorizontal,
+  Folder, Wand2, Crosshair
 } from 'lucide-react';
 import './App.css';
 
@@ -15,6 +16,10 @@ import { DiffViewer } from './components/DiffViewer';
 import { WordPressBridge } from './components/WordPressBridge';
 import { TerminalDrawer } from './components/TerminalDrawer';
 import { SwarmRebuildOverlay } from './components/SwarmRebuildOverlay';
+import { ProjectsManagerModal } from './components/ProjectsManagerModal';
+import { AppSettingsModal } from './components/AppSettingsModal';
+import { KovaMagicPanel } from './components/KovaMagicPanel';
+import { DomInspectPanel } from './components/DomInspectPanel';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -102,13 +107,19 @@ export function App() {
   const [showEngineModal, setShowEngineModal] = useState(false);
   const [isProbing, setIsProbing] = useState(false);
 
-  // Workbench Stages: 'preview' | 'code' | 'diff' | 'wp' | 'terminal'
+  // Workbench Stages: 'preview' | 'code' | 'diff' | 'wp' | 'terminal' | 'inspect'
   const [activeTab, setActiveTab] = useState('preview');
   const [recentFilesModified, setRecentFilesModified] = useState([
     'src/components/landing/kova/KovaFooter.tsx',
     'src/app/page.tsx'
   ]);
   const [swarmActive, setSwarmActive] = useState(false);
+
+  // Projects & Settings & Magic Modal states
+  const [showProjectsModal, setShowProjectsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showMagicPanel, setShowMagicPanel] = useState(false);
+  const [currentProjectName, setCurrentProjectName] = useState('Kova AI Flagship');
 
   // Slash commands state
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
@@ -244,6 +255,11 @@ export function App() {
       setInput('');
       return;
     }
+    if (cmd.action === 'open-inspect') {
+      setActiveTab('inspect');
+      setInput('');
+      return;
+    }
     if (cmd.action === 'open-terminal') {
       setActiveTab('terminal');
       setInput('');
@@ -251,6 +267,21 @@ export function App() {
     }
     if (cmd.action === 'open-wp') {
       setActiveTab('wp');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-projects') {
+      setShowProjectsModal(true);
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-settings') {
+      setShowSettingsModal(true);
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-magic') {
+      setShowMagicPanel(true);
       setInput('');
       return;
     }
@@ -443,11 +474,13 @@ export function App() {
   };
 
   // Dispatch prompt to the respective engine CLI / runtime
-  const handleSend = async () => {
-    if (!input.trim() || isGenerating) return;
+  const handleSend = async (overridePrompt = null) => {
+    let userText = (typeof overridePrompt === 'string' ? overridePrompt : input).trim();
+    if (!userText || isGenerating) return;
 
-    let userText = input.trim();
-    setInput('');
+    if (typeof overridePrompt !== 'string') {
+      setInput('');
+    }
     setSlashMenuOpen(false);
 
     // Handle Slash Commands
@@ -462,8 +495,12 @@ export function App() {
         if (foundCmd.action === 'open-diff') { setActiveTab('diff'); return; }
         if (foundCmd.action === 'open-code') { setActiveTab('code'); return; }
         if (foundCmd.action === 'open-preview') { setActiveTab('preview'); return; }
+        if (foundCmd.action === 'open-inspect') { setActiveTab('inspect'); return; }
         if (foundCmd.action === 'open-terminal') { setActiveTab('terminal'); return; }
         if (foundCmd.action === 'open-wp') { setActiveTab('wp'); return; }
+        if (foundCmd.action === 'open-projects') { setShowProjectsModal(true); return; }
+        if (foundCmd.action === 'open-settings') { setShowSettingsModal(true); return; }
+        if (foundCmd.action === 'open-magic') { setShowMagicPanel(true); return; }
         if (foundCmd.action === 'export-zip') { handleExportZip(); return; }
         if (foundCmd.action === 'clear-chat') {
           setMessages([
@@ -742,10 +779,30 @@ Always provide complete, valid code so it can be automatically written to disk.`
               </optgroup>
             </select>
           </div>
+
+          {/* PROJECT SWITCHER */}
+          <button 
+            className="project-switch-pill"
+            onClick={() => setShowProjectsModal(true)}
+            title="Switch Workspace Project"
+          >
+            <Folder size={12} style={{ color: 'var(--accent-emerald)' }} />
+            <span>{currentProjectName}</span>
+          </button>
         </div>
 
         {/* SYSTEM STATUS PILLS & WORKBENCH ACTIONS */}
         <div className="system-pills">
+          {/* KOVA MAGIC POLISH TOGGLE */}
+          <button 
+            className={`magic-polish-btn ${showMagicPanel ? 'active' : ''}`}
+            onClick={() => setShowMagicPanel(!showMagicPanel)}
+            title="Kova Magic Polish — Turn raw CLI into Impeccable Design"
+          >
+            <Wand2 size={13} />
+            <span>Magic Polish</span>
+          </button>
+
           {/* EXPORT ZIP BUTTON */}
           <button 
             className="export-zip-btn" 
@@ -765,6 +822,15 @@ Always provide complete, valid code so it can be automatically written to disk.`
             <Zap size={13} style={{ color: 'var(--accent-emerald)' }} />
             <span>Connected Engines</span>
             <span className="badge-count">{connectedCount} Active</span>
+          </button>
+
+          {/* SETTINGS MODAL TRIGGER */}
+          <button 
+            className="settings-btn"
+            onClick={() => setShowSettingsModal(true)}
+            title="Studio Settings & API Keys"
+          >
+            <Settings size={14} />
           </button>
 
           <div className={`status-pill ${cliStatus.opencode ? 'online' : 'offline'}`} title="OpenCode CLI">
@@ -792,6 +858,17 @@ Always provide complete, valid code so it can be automatically written to disk.`
           </div>
         </div>
       </header>
+
+      {/* KOVA MAGIC POLISH DRAWER */}
+      {showMagicPanel && (
+        <KovaMagicPanel
+          onApplyAesthetic={(magicPrompt) => {
+            handleSend(magicPrompt);
+            setShowMagicPanel(false);
+          }}
+          isApplying={isGenerating}
+        />
+      )}
 
       {/* MAIN SPLIT WORKBENCH */}
       <div className="workbench-split split">
@@ -1008,6 +1085,14 @@ Always provide complete, valid code so it can be automatically written to disk.`
                 <span>Diff</span>
               </button>
               <button 
+                className={`wb-tab-btn ${activeTab === 'inspect' ? 'active' : ''}`}
+                onClick={() => setActiveTab('inspect')}
+                title="Interactive DOM Element Inspector & Redesign"
+              >
+                <Crosshair size={13} />
+                <span>DOM Inspect</span>
+              </button>
+              <button 
                 className={`wb-tab-btn ${activeTab === 'wp' ? 'active' : ''}`}
                 onClick={() => setActiveTab('wp')}
                 title="Headless WordPress CMS Bridge"
@@ -1120,6 +1205,13 @@ Always provide complete, valid code so it can be automatically written to disk.`
               <DiffViewer
                 workspacePath={workspacePath}
                 recentFiles={recentFilesModified}
+              />
+            )}
+
+            {/* 4. DOM ELEMENT INSPECTOR */}
+            {activeTab === 'inspect' && (
+              <DomInspectPanel
+                onInspectPrompt={(p) => handleSend(p)}
               />
             )}
 
@@ -1346,6 +1438,25 @@ Always provide complete, valid code so it can be automatically written to disk.`
             </div>
           </div>
         </div>
+      )}
+
+      {/* PROJECTS MANAGER MODAL */}
+      {showProjectsModal && (
+        <ProjectsManagerModal
+          currentPath={workspacePath}
+          onSelectProject={(newPath, name) => {
+            setWorkspacePath(newPath);
+            if (name) setCurrentProjectName(name);
+          }}
+          onClose={() => setShowProjectsModal(false)}
+        />
+      )}
+
+      {/* APP SETTINGS MODAL */}
+      {showSettingsModal && (
+        <AppSettingsModal
+          onClose={() => setShowSettingsModal(false)}
+        />
       )}
     </div>
   );

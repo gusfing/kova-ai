@@ -34,6 +34,34 @@
 - **⚡ In-Chat Dynamic Model Switcher**  
   Switch engines and models on the fly directly inside the chat toolbar or header. Jump from DeepSeek V4.1 to Claude 3.7 or local Qwen 2.5 Coder in one click without restarting your session.
 
+- **🪄 Kova Magic Polish Engine (Our Own Magic)**  
+  Raw CLI tools generate functional code, but Kova makes it look world-class. Click **Magic Polish** in the top bar to apply Impeccable Design passes:
+  - **Live Archetypes**: Obsidian High-Tech, Luxury Editorial, Cyberpunk Vector, Nordic Clean.
+  - **Aesthetic Controls**: Accent glow color swatches, micro-border radii, glassmorphism blur depth (`backdrop-blur-md` to `backdrop-blur-xl`), and hover lifts.
+  - Automatically transforms flat divs into elevated, high-contrast, award-winning SaaS interfaces.
+
+- **📁 Projects Management**  
+  Switch seamlessly between active project workspaces or scaffold brand new ones:
+  - Switch workspaces on the fly without closing the studio.
+  - Project templates with pre-configured archetypes (SaaS, Luxury Editorial, Minimalist).
+  - Clone or connect directly from remote Git repositories.
+
+- **⚙️ Studio Settings Panel**  
+  Complete configuration for your engineering environment:
+  - **API Keys**: Anthropic, OpenAI, Groq, OpenRouter keys saved securely to local storage.
+  - **Local Model Endpoints**: Configurable ports for LM Studio (`127.0.0.1:1234`) and Ollama (`127.0.0.1:11434`).
+  - **WordPress CMS Config**: Headless API bridge URL and auth keys.
+  - **Editor Preferences**: Auto-save verified AST edits and automatic live reload toggles.
+
+- **🎯 Interactive DOM Element Inspector**  
+  Click **DOM Inspect** in the workbench to inspect specific components on the live page:
+  - Target Hero Headline, Floating Navbar, Bento Grid, Pricing Cards, or Footer.
+  - View current HTML tags, active Tailwind CSS utility classes, and copy.
+  - Send direct element-specific redesign prompts to the autonomous engine with 1 click.
+
+- **✨ Swarm Multiplayer Cursors Simulation**  
+  Inspired by the Swarm Rebuild engine, toggle multiplayer cursors to visualize autonomous agents navigating, selecting bounding boxes, and refactoring project files in real time.
+
 - **⌨️ Interactive Claude Code Slash Commands**  
   Type `/` in the chat to open the floating command autocomplete menu:
   - `/plan <feature>`: Creates a step-by-step architectural breakdown with `<todos>` checklist.
@@ -169,12 +197,20 @@ flowchart TD
 - [x] **Tauri v2 Desktop Shell**: High-performance, low-memory Windows native desktop application.
 - [x] **Universal CLI Connector**: One-click connection to OpenCode, Claude Code, Codex, LM Studio, and Ollama.
 - [x] **In-Chat Engine & Model Switcher**: Seamless switching between models and runtimes mid-session.
+- [x] **🪄 Kova Magic Polish Engine**: 4 design archetypes, accent swatches, glassmorphism intensity, and 1-click aesthetic elevations.
+- [x] **📁 Projects Management**: Multi-workspace switcher, project templates, and GitHub clone support.
+- [x] **⚙️ Studio Settings Panel**: API keys (Anthropic, OpenAI, Groq), local endpoints, WordPress configuration, and editor toggles.
+- [x] **🎯 DOM Element Inspector**: Visual component targeting (`Hero`, `Navbar`, `Bento`, `Pricing`, `Footer`) with direct AI redesign prompts.
+- [x] **✨ Swarm Multiplayer Cursors Simulation**: Real-time canvas overlay rendering multi-agent cursor physics and bounding sweeps.
+- [x] **💻 Code Canvas & File Explorer**: Syntax-highlighted code editor with direct disk save (`Ctrl+S`).
+- [x] **📊 Diff Viewer**: Side-by-side git line diffs tracking agent modifications.
+- [x] **🔌 Headless WordPress Bridge**: REST & GraphQL live endpoint testing and post hydration.
+- [x] **📟 Terminal Drawer**: Embedded workspace console for running build and diagnostics commands.
+- [x] **📦 One-Click Project ZIP Export**: Bundles standalone Next.js site directly to Downloads.
+- [x] **⌨️ Claude Code Slash Commands**: Full `/plan`, `/code`, `/diff`, `/wp`, `/inspect`, `/projects`, `/settings`, `/magic`, `/export`.
 - [x] **Headless OpenCode CLI Wrapper**: Spawns `opencode run` with JSON streaming and thinking logs.
-- [x] **Official Claude Code & Codex CLI Bridges**: Spawns non-interactive terminal coding executions.
-- [x] **Collapsible Chain-of-Thought UI**: Interactive accordion displaying agent reasoning steps.
 - [x] **LM Studio Rust Socket IPC**: Zero-CORS direct TCP bridge to query local GGUF models on port `1234`.
-- [x] **Dual Layout Splitter**: Split 50/50, Focus Agent, or Focus Preview mode.
-- [x] **Impeccable Design Skill Injection**: `AGENTS.md` guidelines automatically loaded by the autonomous agent.
+- [x] **Impeccable Design Standard**: Deep obsidian canvas, micro-borders, emerald glows, and zero AI gradient slop.
 - [x] **Live Next.js Preview Frame**: Real-time rendering with responsive viewport controls (Desktop/Tablet/Mobile).
 
 ---
