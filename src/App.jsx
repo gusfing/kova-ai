@@ -10,6 +10,73 @@ import './App.css';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
+// Active Next.js components on the live homepage
+const ACTIVE_COMPONENTS = {
+  footer: {
+    path: 'src/components/landing/kova/KovaFooter.tsx',
+    name: 'KovaFooter',
+    fallbackPath: 'src/components/Footer.jsx'
+  },
+  nav: {
+    path: 'src/components/landing/kova/KovaNav.tsx',
+    name: 'KovaNav',
+    fallbackPath: 'src/components/landing/Navbar.tsx'
+  },
+  navbar: {
+    path: 'src/components/landing/kova/KovaNav.tsx',
+    name: 'KovaNav',
+    fallbackPath: 'src/components/landing/Navbar.tsx'
+  },
+  header: {
+    path: 'src/components/landing/kova/KovaNav.tsx',
+    name: 'KovaNav',
+    fallbackPath: 'src/components/landing/Navbar.tsx'
+  },
+  hero: {
+    path: 'src/components/landing/kova/KovaHero.tsx',
+    name: 'KovaHero',
+    fallbackPath: 'src/components/Hero.jsx'
+  },
+  features: {
+    path: 'src/components/landing/kova/KovaFeatures.tsx',
+    name: 'KovaFeatures',
+    fallbackPath: 'src/components/FeatureBento.jsx'
+  },
+  bento: {
+    path: 'src/components/landing/kova/KovaFeatures.tsx',
+    name: 'KovaFeatures',
+    fallbackPath: 'src/components/FeatureBento.jsx'
+  },
+  pricing: {
+    path: 'src/components/landing/kova/KovaPricing.tsx',
+    name: 'KovaPricing'
+  },
+  faq: {
+    path: 'src/components/landing/kova/KovaFaq.tsx',
+    name: 'KovaFaq'
+  },
+  workflow: {
+    path: 'src/components/landing/kova/KovaWorkflow.tsx',
+    name: 'KovaWorkflow'
+  },
+  cta: {
+    path: 'src/components/landing/kova/KovaCta.tsx',
+    name: 'KovaCta'
+  },
+  benchmark: {
+    path: 'src/components/landing/kova/KovaBenchmark.tsx',
+    name: 'KovaBenchmark'
+  },
+  page: {
+    path: 'src/app/page.tsx',
+    name: 'HomePage'
+  },
+  home: {
+    path: 'src/app/page.tsx',
+    name: 'HomePage'
+  }
+};
+
 export function App() {
   // Selected engine: prefix defines runtime ('opencode', 'claude', 'codex', 'lmstudio', 'ollama')
   const [selectedEngine, setSelectedEngine] = useState('opencode:opencode/deepseek-v4.1-flash-free');
@@ -31,9 +98,9 @@ export function App() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      engine: 'OpenCode CLI',
-      text: "I am Kova Studio Universal Engine. I can orchestrate OpenCode CLI, Claude Code CLI, Codex CLI, and local GPU models (LM Studio / Ollama). Select your preferred engine and tell me what to build!",
-      thoughts: ["Multi-CLI agent wrapper initialized. Ready to execute autonomous engineering tasks on the Next.js frontend."],
+      engine: 'Kova Universal Engine',
+      text: "I am Kova Studio Universal Engine. I can orchestrate OpenCode CLI, Claude Code CLI, Codex CLI, and local GPU models (LM Studio / Ollama) with real disk writing and live visual reload. What would you like to build?",
+      thoughts: ["Multi-CLI agent wrapper initialized with automated disk file write loop."],
       toolCalls: [],
       stats: null
     }
@@ -83,12 +150,83 @@ export function App() {
 
   const handleReloadPreview = () => {
     if (iframeRef.current) {
-      iframeRef.current.src = previewUrl;
+      try {
+        iframeRef.current.contentWindow?.location?.reload();
+      } catch (e) {
+        // Cross-origin fallback
+      }
+      const base = previewUrl.split('?')[0];
+      setPreviewUrl(`${base}?t=${Date.now()}`);
     }
   };
 
   const toggleThought = (idx) => {
     setExpandedThoughts(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  // Extract file blocks from model output and write them directly to disk
+  const extractAndApplyFiles = async (text, identifiedComp) => {
+    const fileActions = [];
+    
+    // Pattern: ### Write: <path> ... ```lang\n<code>\n```
+    const fileBlockRegex = /(?:###\s*(?:Write|File|Update|Create):\s*([^\n\r]+)|(?:\/\/|\/\*)\s*(?:File|Path):\s*([^\n\r*]+))\s*```(?:[a-zA-Z0-9_\-]+)?\s*([\s\S]*?)```/gi;
+    
+    let match;
+    let foundExplicit = false;
+    while ((match = fileBlockRegex.exec(text)) !== null) {
+      foundExplicit = true;
+      let rawPath = (match[1] || match[2] || '').trim();
+      let content = match[3]?.trim();
+      if (rawPath && content) {
+        rawPath = rawPath.replace(/[`"':]/g, '').trim().replace(/\\/g, '/');
+        
+        // Write to the specified file
+        const fullPath = `${workspacePath.replace(/\\/g, '/')}/${rawPath.replace(/^\.\//, '')}`;
+        try {
+          await invoke('write_file_content', {
+            filePath: fullPath.replace(/\//g, '\\'),
+            content
+          });
+          fileActions.push({ tool: 'write_file', target: rawPath, status: 'written to disk' });
+
+          // If the model wrote to 'src/components/Footer.jsx' or 'Footer.tsx', also sync into active 'src/components/landing/kova/KovaFooter.tsx'
+          if (rawPath.toLowerCase().includes('footer') && !rawPath.includes('KovaFooter')) {
+            const activePath = `${workspacePath.replace(/\\/g, '/')}/src/components/landing/kova/KovaFooter.tsx`;
+            await invoke('write_file_content', {
+              filePath: activePath.replace(/\//g, '\\'),
+              content
+            });
+            fileActions.push({ tool: 'sync_component', target: 'src/components/landing/kova/KovaFooter.tsx', status: 'live rendered' });
+          }
+        } catch (e) {
+          console.error("Write error:", e);
+        }
+      }
+    }
+
+    // Fallback if model only returned a ```jsx ... ``` or ```tsx ... ``` code block without ### Write:
+    if (!foundExplicit) {
+      const codeBlockRegex = /```(?:jsx|tsx|javascript|typescript|react)?\s*([\s\S]*?)```/gi;
+      let codeMatch = codeBlockRegex.exec(text);
+      if (codeMatch && codeMatch[1] && codeMatch[1].length > 40) {
+        const code = codeMatch[1].trim();
+        const targetRel = identifiedComp?.path || (text.toLowerCase().includes('footer') ? 'src/components/landing/kova/KovaFooter.tsx' : null);
+        if (targetRel) {
+          const fullPath = `${workspacePath.replace(/\\/g, '/')}/${targetRel}`;
+          try {
+            await invoke('write_file_content', {
+              filePath: fullPath.replace(/\//g, '\\'),
+              content: code
+            });
+            fileActions.push({ tool: 'write_file', target: targetRel, status: 'written to disk' });
+          } catch (e) {
+            console.error("Fallback write error:", e);
+          }
+        }
+      }
+    }
+
+    return fileActions;
   };
 
   // Parser for OpenCode JSON streaming event logs
@@ -141,7 +279,10 @@ export function App() {
     }
     if (val.startsWith('claude:')) return 'Claude Code CLI';
     if (val.startsWith('codex:')) return 'Codex CLI';
-    if (val.startsWith('lmstudio:')) return 'LM Studio (Local GPU)';
+    if (val.startsWith('lmstudio:')) {
+      const m = val.replace('lmstudio:', '');
+      return `LM Studio (${m})`;
+    }
     if (val.startsWith('ollama:')) return 'Ollama (Local)';
     return val;
   };
@@ -191,9 +332,9 @@ export function App() {
           cwd: workspacePath
         });
 
-        // Parse any tool runs or code output from Claude
+        // Also check if any files were written
+        const fileActions = await extractAndApplyFiles(rawOutput, null);
         const lines = rawOutput.split(/\r?\n/);
-        const fileActions = [];
         for (const line of lines) {
           if (line.includes('Created') || line.includes('Updated') || line.includes('Wrote') || line.includes('Edited')) {
             fileActions.push({ tool: 'write_file', target: line.trim(), status: 'applied' });
@@ -220,6 +361,11 @@ export function App() {
           cwd: workspacePath
         });
 
+        const fileActions = await extractAndApplyFiles(rawOutput, null);
+        if (fileActions.length === 0) {
+          fileActions.push({ tool: 'codex_exec', target: 'workspace files', status: 'verified' });
+        }
+
         setMessages(prev => [
           ...prev,
           {
@@ -227,7 +373,7 @@ export function App() {
             engine: 'Codex CLI',
             text: rawOutput,
             thoughts: ["Codex autonomous non-interactive engine executed code modifications."],
-            toolCalls: [{ tool: 'codex_exec', target: 'workspace files', status: 'verified' }],
+            toolCalls: fileActions,
             stats: null
           }
         ]);
@@ -235,16 +381,49 @@ export function App() {
       // 4. LM STUDIO (LOCAL GPU)
       else if (selectedEngine.startsWith('lmstudio:')) {
         const modelId = selectedEngine.replace('lmstudio:', '') || 'qwen2.5-coder-7b-instruct-abliterated';
-        setStatusNote(`[LM Studio GPU] Generating with ${modelId}…`);
+        setStatusNote(`[LM Studio GPU] Reading workspace context & generating with ${modelId}…`);
         
+        // Find which component the user wants to modify
+        const lowerInput = userText.toLowerCase();
+        let identifiedComp = null;
+        for (const [key, comp] of Object.entries(ACTIVE_COMPONENTS)) {
+          if (lowerInput.includes(key)) {
+            identifiedComp = comp;
+            break;
+          }
+        }
+
+        let contextSnippet = "";
+        if (identifiedComp) {
+          try {
+            const currentCode = await invoke('read_file_content', {
+              filePath: `${workspacePath}\\${identifiedComp.path.replace(/\//g, '\\')}`
+            });
+            contextSnippet = `\n\nTarget File to edit: ${identifiedComp.path}\nCurrent Code:\n\`\`\`tsx\n${currentCode}\n\`\`\``;
+          } catch (e) {
+            console.warn("Could not read target component:", e);
+          }
+        }
+
+        const systemPrompt = `You are Kova AI, an elite autonomous web architect running locally on GPU.
+You are directly modifying the user's running Next.js 15 site.
+Follow the Impeccable Design Standard: Obsidian (#09090b), crisp micro-borders (border-white/10), emerald (#10b981) accents, Lucide React icons.
+
+CRITICAL INSTRUCTION:
+When editing or creating code, you MUST format the response like this:
+### Write: <exact_file_path>
+\`\`\`tsx
+<complete file code with all imports and exports>
+\`\`\`
+Always provide complete, valid code so it can be automatically written to disk.`;
+
+        const userPrompt = `${userText}${contextSnippet}`;
+
         const body = {
           model: modelId,
           messages: [
-            { 
-              role: 'system', 
-              content: 'You are Kova AI, an elite frontend architect. Adhere to Impeccable Design: Obsidian (#09090b), crisp borders (border-white/10), emerald (#10b981) accents. Output file updates with ### Write: path.' 
-            },
-            { role: 'user', content: userText }
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
           ],
           temperature: 0.2
         };
@@ -253,14 +432,22 @@ export function App() {
         const data = JSON.parse(raw);
         const text = data?.choices?.[0]?.message?.content || "Completed.";
 
+        setStatusNote('Applying generated code to workspace files…');
+        const fileActions = await extractAndApplyFiles(text, identifiedComp);
+
         setMessages(prev => [
           ...prev, 
           { 
             role: 'assistant', 
             engine: `LM Studio (${modelId})`,
             text, 
-            thoughts: ["Direct local GPU inference via LM Studio OpenAI-compatible endpoint."], 
-            toolCalls: [], 
+            thoughts: [
+              `Direct local GPU inference on ${modelId}.`,
+              fileActions.length > 0 
+                ? `Extracted and wrote ${fileActions.length} file(s) directly to disk.` 
+                : "No disk writes detected in output."
+            ], 
+            toolCalls: fileActions, 
             stats: data?.usage || null 
           }
         ]);
@@ -268,7 +455,6 @@ export function App() {
       // 5. OLLAMA
       else if (selectedEngine.startsWith('ollama:')) {
         setStatusNote(`[Ollama] Connecting to local Ollama service…`);
-        // If Ollama is used, fallback message or endpoint
         setMessages(prev => [
           ...prev,
           {
