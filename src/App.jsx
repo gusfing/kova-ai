@@ -5,7 +5,7 @@ import {
   Send, Layers, Server, Cpu, Database, CheckCircle2, AlertCircle, FileCode, Play, Bot,
   ChevronDown, ChevronRight, BrainCircuit, Activity, Wrench, ShieldCheck, X, Link, Radio,
   Zap, Code2, Check, Settings, ExternalLink, Download, GitCompare, Eye, SlidersHorizontal,
-  Folder, Wand2, Crosshair
+  Folder, Wand2, Crosshair, Copy
 } from 'lucide-react';
 import './App.css';
 
@@ -89,6 +89,77 @@ const ACTIVE_COMPONENTS = {
     name: 'HomePage'
   }
 };
+
+function CodeBlockView({ language, code }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="message-code-block">
+      <div className="code-block-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <FileCode size={12} style={{ color: 'var(--accent-emerald)' }} />
+          <span>{language || 'code'}</span>
+        </div>
+        <button className="code-copy-btn" onClick={handleCopy} title="Copy code">
+          {copied ? <><Check size={11} style={{ color: 'var(--accent-emerald)' }} /> Copied</> : <><Copy size={11} /> Copy</>}
+        </button>
+      </div>
+      <pre className="code-block-pre">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function FormattedMessage({ text }) {
+  if (!text) return null;
+
+  const parts = [];
+  const regex = /```([a-zA-Z0-9_\-]+)?\s*([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    parts.push({
+      type: 'code',
+      language: match[1] || 'plaintext',
+      content: match[2]?.trim() || ''
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  if (parts.length === 0) {
+    return <div className="bubble-body" style={{ whiteSpace: 'pre-wrap' }}>{text}</div>;
+  }
+
+  return (
+    <div className="bubble-body">
+      {parts.map((part, idx) => {
+        if (part.type === 'code') {
+          return <CodeBlockView key={idx} language={part.language} code={part.content} />;
+        }
+        return (
+          <div key={idx} className="bubble-text-segment" style={{ whiteSpace: 'pre-wrap' }}>
+            {part.content}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function App() {
   // Selected engine: prefix defines runtime ('opencode', 'claude', 'codex', 'lmstudio', 'ollama')
@@ -832,30 +903,6 @@ Always provide complete, valid code so it can be automatically written to disk.`
           >
             <Settings size={14} />
           </button>
-
-          <div className={`status-pill ${cliStatus.opencode ? 'online' : 'offline'}`} title="OpenCode CLI">
-            <span className={`status-dot ${cliStatus.opencode ? 'online' : 'offline'}`} />
-            <Bot size={12} />
-            <span>OpenCode: {cliStatus.opencode ? 'Ready' : 'Not found'}</span>
-          </div>
-
-          <div className={`status-pill ${cliStatus.claude ? 'online' : 'offline'}`} title="Claude Code CLI">
-            <span className={`status-dot ${cliStatus.claude ? 'online' : 'offline'}`} />
-            <Code2 size={12} />
-            <span>Claude: {cliStatus.claude ? 'Ready' : 'Not found'}</span>
-          </div>
-
-          <div className={`status-pill ${cliStatus.codex ? 'online' : 'offline'}`} title="Codex CLI">
-            <span className={`status-dot ${cliStatus.codex ? 'online' : 'offline'}`} />
-            <Terminal size={12} />
-            <span>Codex: {cliStatus.codex ? 'Ready' : 'Not found'}</span>
-          </div>
-
-          <div className={`status-pill ${cliStatus.lmstudio ? 'online' : 'offline'}`} title="LM Studio Local GPU">
-            <span className={`status-dot ${cliStatus.lmstudio ? 'online' : 'offline'}`} />
-            <Cpu size={12} />
-            <span>LM Studio: {cliStatus.lmstudio ? 'Ready' : 'Offline'}</span>
-          </div>
         </div>
       </header>
 
@@ -976,9 +1023,7 @@ Always provide complete, valid code so it can be automatically written to disk.`
                 )}
 
                 {/* 3. ASSISTANT TEXT */}
-                <div className="bubble-body" style={{ whiteSpace: 'pre-wrap' }}>
-                  {m.text}
-                </div>
+                <FormattedMessage text={m.text} />
 
                 {/* 4. PERFORMANCE / TOKEN FOOTER */}
                 {m.stats && (
@@ -1153,8 +1198,9 @@ Always provide complete, valid code so it can be automatically written to disk.`
                     onClick={() => setSwarmActive(!swarmActive)} 
                     title="Toggle Swarm Multiplayer Cursors Simulation"
                   >
-                    <Sparkles size={12} style={{ color: 'var(--accent-emerald)' }} />
+                    <Sparkles size={12} style={{ color: swarmActive ? '#34d399' : 'var(--accent-emerald)' }} />
                     <span>Swarm Cursors</span>
+                    {swarmActive && <span className="pulsing-emerald-dot" />}
                   </button>
                   <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
                     <RefreshCw size={13} />

@@ -1,37 +1,161 @@
 /**
  * Swarm Rebuild Physics Engine
  * Inspired by DhvanilPatel/swarm-cursors & Joel Califa's Swarm.
- * Simulates multi-cursor collaborative agents building web components in real-time.
+ * Simulates real collaborative AI agents targeting semantic UI components,
+ * drawing selection boxes, editing code/tokens, and synchronizing AST changes.
  */
 
 export const SWARM_AGENTS = [
   {
     id: 'master-architect',
     name: 'Architect',
-    role: 'Structuring Layout',
+    role: 'System Structure',
     color: '#a855f7', // Purple-500
     cursorSvgColor: '#c084fc',
+    specialty: 'Layout & Hierarchy'
   },
   {
     id: 'ui-designer',
     name: 'UI Designer',
-    role: 'Crafting Hero Section',
+    role: 'Visual Design',
     color: '#06b6d4', // Cyan-500
     cursorSvgColor: '#22d3ee',
+    specialty: 'Typography & Spacing'
   },
   {
     id: 'tailwind-styler',
     name: 'Tailwind Styler',
-    role: 'Polishing Emerald Tokens',
+    role: 'Design Tokens',
     color: '#10b981', // Emerald-500
     cursorSvgColor: '#34d399',
+    specialty: 'Micro-borders & Glows'
   },
   {
     id: 'wordpress-agent',
     name: 'WP Specialist',
-    role: 'Hydrating Headless REST',
+    role: 'Headless CMS',
     color: '#f59e0b', // Amber-500
     cursorSvgColor: '#fbbf24',
+    specialty: 'REST API & Hydration'
+  }
+];
+
+export const SEMANTIC_PAGE_ELEMENTS = [
+  {
+    id: 'nav',
+    label: 'Floating Navbar',
+    tag: '<header.nav>',
+    getBounds: (w, h) => ({
+      x: w * 0.06,
+      y: 18,
+      w: w * 0.88,
+      h: 46
+    }),
+    tasks: [
+      'Refining glassmorphism blur (backdrop-blur-md)',
+      'Adjusting nav link tracking & opacity',
+      'Adding emerald status beacon dot',
+      'Hardening sticky z-50 elevation'
+    ]
+  },
+  {
+    id: 'hero-headline',
+    label: 'Hero Main Headline',
+    tag: '<h1>',
+    getBounds: (w, h) => ({
+      x: w * 0.06,
+      y: 95,
+      w: Math.min(420, w * 0.44),
+      h: 90
+    }),
+    tasks: [
+      'Tuning text-6xl font-extrabold leading-tight',
+      'Applying emerald gradient text accent',
+      'Eliminating generic text-gray-500',
+      'Refining optical line balance'
+    ]
+  },
+  {
+    id: 'hero-badge',
+    label: 'Kova 2.0 Version Pill',
+    tag: '<div.badge>',
+    getBounds: (w, h) => ({
+      x: w * 0.06,
+      y: 72,
+      w: 190,
+      h: 24
+    }),
+    tasks: [
+      'Applying bg-emerald-500/10 border-emerald-500/20',
+      'Updating weekly sites build counter (1,204)',
+      'Setting font-mono text-xs uppercase'
+    ]
+  },
+  {
+    id: 'hero-prompt-box',
+    label: 'Interactive Prompt Input',
+    tag: '<section.composer>',
+    getBounds: (w, h) => ({
+      x: w * 0.06,
+      y: 205,
+      w: Math.min(440, w * 0.46),
+      h: 120
+    }),
+    tasks: [
+      'Styling obsidian inner container (#09090b)',
+      'Adding preset pills (SaaS, Minimalist, Store)',
+      'Applying hover lift to "Build my site" button',
+      'Injecting focus:ring-emerald-500/40 glow'
+    ]
+  },
+  {
+    id: 'vitals-card',
+    label: 'Core Web Vitals Bento',
+    tag: '<div.card>',
+    getBounds: (w, h) => ({
+      x: Math.max(w * 0.54, w - 420),
+      y: 95,
+      w: Math.min(390, w * 0.42),
+      h: 105
+    }),
+    tasks: [
+      'Plotting real-time 0.8s LCP metric wave',
+      'Applying border-white/10 micro-border',
+      'Adding inner emerald glow token'
+    ]
+  },
+  {
+    id: 'pipeline-bento',
+    label: 'Autonomous Build Pipeline',
+    tag: '<div.pipeline>',
+    getBounds: (w, h) => ({
+      x: Math.max(w * 0.54, w - 420),
+      y: 220,
+      w: Math.min(390, w * 0.42),
+      h: 175
+    }),
+    tasks: [
+      'Validating 5/5 AST compilation pipeline',
+      'Binding headless WordPress REST sync',
+      'Injecting Lucide CheckCircle2 icons',
+      'Adding animated deploy checkmark'
+    ]
+  },
+  {
+    id: 'telemetry-bar',
+    label: 'Global Telemetry Stats',
+    tag: '<footer.metrics>',
+    getBounds: (w, h) => ({
+      x: w * 0.06,
+      y: 350,
+      w: Math.min(440, w * 0.46),
+      h: 60
+    }),
+    tasks: [
+      'Displaying 18ms Edge TTFB stat',
+      'Adding 310 Anycast PoPs latency badge',
+      'Verifying 99.99% uptime telemetry'
+    ]
   }
 ];
 
@@ -45,34 +169,28 @@ export class SwarmSimulation {
   }
 
   initBoids() {
-    const margin = 80;
-    const availableW = Math.max(200, this.width - margin * 2);
-    const availableH = Math.max(200, this.height - margin * 2);
-
     this.boids = SWARM_AGENTS.map((agent, index) => {
-      const startX = margin + Math.random() * availableW;
-      const startY = margin + Math.random() * availableH;
-      const targetX = margin + Math.random() * availableW;
-      const targetY = margin + Math.random() * availableH;
+      // Assign distinct initial target elements to avoid overlapping
+      const targetElem = SEMANTIC_PAGE_ELEMENTS[index % SEMANTIC_PAGE_ELEMENTS.length];
+      const bounds = targetElem.getBounds(this.width, this.height);
 
       return {
         ...agent,
-        x: startX,
-        y: startY,
-        targetX,
-        targetY,
-        vx: (Math.random() - 0.5) * 5,
-        vy: (Math.random() - 0.5) * 5,
-        box: {
-          x: Math.max(20, targetX - 40),
-          y: Math.max(20, targetY - 30),
-          w: 160 + Math.random() * 80,
-          h: 60 + Math.random() * 40
-        },
-        isDrawingBox: true,
-        boxProgress: 0.2,
-        caretBlink: 0,
-        actionLabel: agent.role
+        targetElem,
+        x: bounds.x + Math.random() * bounds.w,
+        y: bounds.y + Math.random() * bounds.h,
+        targetX: bounds.x,
+        targetY: bounds.y,
+        vx: 0,
+        vy: 0,
+        state: 'targeting', // 'targeting' | 'selecting' | 'editing' | 'completed'
+        stateTimer: 0,
+        editProgress: 0,
+        box: { ...bounds },
+        currentTask: targetElem.tasks[0],
+        actionLabel: `${targetElem.tag} ${targetElem.tasks[0]}`,
+        clickRipple: 0,
+        caretBlink: 0
       };
     });
   }
@@ -81,26 +199,20 @@ export class SwarmSimulation {
     if (width > 50 && height > 50) {
       this.width = width;
       this.height = height;
+      // Re-anchor targets to new responsive dimensions
+      this.boids.forEach(boid => {
+        if (boid.targetElem) {
+          const bounds = boid.targetElem.getBounds(this.width, this.height);
+          boid.box = { ...bounds };
+        }
+      });
     }
   }
 
   start() {
     this.active = true;
-    if (this.boids.length === 0) {
-      this.initBoids();
-    }
-    // Give each boid an active mission immediately
-    this.boids.forEach((b, idx) => {
-      b.targetX = Math.random() * (this.width - 180) + 90;
-      b.targetY = Math.random() * (this.height - 180) + 90;
-      b.isDrawingBox = true;
-      b.boxProgress = 0;
-      b.box = {
-        x: Math.max(20, b.targetX - 30),
-        y: Math.max(20, b.targetY - 20),
-        w: 140 + Math.random() * 100,
-        h: 55 + Math.random() * 50
-      };
+    this.boids.forEach((boid, idx) => {
+      this.assignNewTarget(boid, idx);
     });
   }
 
@@ -108,34 +220,40 @@ export class SwarmSimulation {
     this.active = false;
   }
 
+  assignNewTarget(boid, forceIdx = null) {
+    // Pick an element not currently being edited by another agent
+    const usedIds = this.boids.filter(b => b.id !== boid.id && b.targetElem).map(b => b.targetElem.id);
+    const available = SEMANTIC_PAGE_ELEMENTS.filter(e => !usedIds.includes(e.id));
+    const pool = available.length > 0 ? available : SEMANTIC_PAGE_ELEMENTS;
+
+    const elem = (forceIdx !== null && SEMANTIC_PAGE_ELEMENTS[forceIdx % SEMANTIC_PAGE_ELEMENTS.length]) 
+      ? SEMANTIC_PAGE_ELEMENTS[forceIdx % SEMANTIC_PAGE_ELEMENTS.length]
+      : pool[Math.floor(Math.random() * pool.length)];
+
+    boid.targetElem = elem;
+    const bounds = elem.getBounds(this.width, this.height);
+    boid.box = { ...bounds };
+
+    // Target the top-left handle of the element to begin selection
+    boid.targetX = bounds.x;
+    boid.targetY = bounds.y;
+    boid.state = 'targeting';
+    boid.stateTimer = 0;
+    boid.editProgress = 0;
+
+    const task = elem.tasks[Math.floor(Math.random() * elem.tasks.length)];
+    boid.currentTask = task;
+    boid.actionLabel = `${elem.tag} ${task}`;
+  }
+
   triggerBuildStep(filename) {
     const cleanName = filename ? filename.split(/[\/\\]/).pop().replace(/\.[^/.]+$/, '') : 'Component';
     this.active = true;
-    const actions = [
-      `Refactoring <${cleanName}>`,
-      `Updating tokens on ${cleanName}`,
-      `Binding props to ${cleanName}`,
-      `Verifying layout of ${cleanName}`
-    ];
-
     this.boids.forEach((boid, idx) => {
-      const margin = 80;
-      const segW = Math.max(100, (this.width - margin * 2) / 2);
-      const segH = Math.max(100, (this.height - margin * 2) / 2);
-      const col = idx % 2;
-      const row = Math.floor(idx / 2);
-
-      boid.targetX = margin + col * segW + Math.random() * (segW - 100);
-      boid.targetY = margin + row * segH + Math.random() * (segH - 60);
-      boid.actionLabel = actions[idx % actions.length];
-      boid.isDrawingBox = true;
-      boid.boxProgress = 0;
-      boid.box = {
-        x: Math.max(20, boid.targetX - 20),
-        y: Math.max(20, boid.targetY - 20),
-        w: 150 + Math.random() * 100,
-        h: 60 + Math.random() * 50
-      };
+      this.assignNewTarget(boid, idx);
+      boid.currentTask = `Refactoring <${cleanName}> AST`;
+      boid.actionLabel = `<${cleanName}> Applying Impeccable Design tokens`;
+      boid.clickRipple = 1.0;
     });
   }
 
@@ -143,60 +261,79 @@ export class SwarmSimulation {
     if (!this.active) return;
 
     this.boids.forEach(boid => {
-      // Seek target with smooth easing
-      const dx = boid.targetX - boid.x;
-      const dy = boid.targetY - boid.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      boid.stateTimer++;
 
-      if (dist < 22) {
-        // Pick new target within bounds
-        boid.targetX = Math.random() * (this.width - 200) + 100;
-        boid.targetY = Math.random() * (this.height - 200) + 100;
+      // 1. STATE: TARGETING (Flying smoothly to component)
+      if (boid.state === 'targeting') {
+        const dx = boid.targetX - boid.x;
+        const dy = boid.targetY - boid.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // 50% chance to draw a new wireframe box & switch action
-        if (Math.random() > 0.4) {
-          boid.isDrawingBox = true;
-          boid.boxProgress = 0;
-          boid.box = {
-            x: Math.max(20, boid.targetX - 25),
-            y: Math.max(20, boid.targetY - 20),
-            w: 120 + Math.random() * 140,
-            h: 50 + Math.random() * 70
-          };
-
-          const dynamicActions = [
-            'Redesigning <Hero>',
-            'Adjusting padding-y',
-            'Applying backdrop-blur-md',
-            'Tuning emerald gradient',
-            'Testing mobile breakpoint',
-            'Injecting Lucide icons',
-            'Optimizing AST nodes',
-            'Hydrating WordPress API'
-          ];
-          boid.actionLabel = dynamicActions[Math.floor(Math.random() * dynamicActions.length)];
-        }
-      } else {
-        boid.vx = (boid.vx + (dx / dist) * 0.45) * 0.92;
-        boid.vy = (boid.vy + (dy / dist) * 0.45) * 0.92;
-      }
-
-      boid.x += boid.vx;
-      boid.y += boid.vy;
-
-      // Keep within bounds
-      boid.x = Math.max(20, Math.min(this.width - 60, boid.x));
-      boid.y = Math.max(20, Math.min(this.height - 60, boid.y));
-
-      // Advance box drawing
-      if (boid.isDrawingBox && boid.box) {
-        boid.boxProgress = Math.min(1, boid.boxProgress + 0.035);
-        if (boid.boxProgress >= 1) {
-          boid.isDrawingBox = false;
+        if (dist < 12) {
+          // Arrived at element top-left; transition to drag-selecting bounding box
+          boid.state = 'selecting';
+          boid.stateTimer = 0;
+          boid.targetX = boid.box.x + boid.box.w;
+          boid.targetY = boid.box.y + boid.box.h;
+          boid.clickRipple = 1.0;
+        } else {
+          boid.vx = (boid.vx + (dx / dist) * 0.7) * 0.88;
+          boid.vy = (boid.vy + (dy / dist) * 0.7) * 0.88;
+          boid.x += boid.vx;
+          boid.y += boid.vy;
         }
       }
 
-      boid.caretBlink = (boid.caretBlink + 1) % 60;
+      // 2. STATE: SELECTING (Drawing dashed bounding box across element)
+      else if (boid.state === 'selecting') {
+        const dx = boid.targetX - boid.x;
+        const dy = boid.targetY - boid.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 14 || boid.stateTimer > 70) {
+          // Box fully selected; transition to editing
+          boid.state = 'editing';
+          boid.stateTimer = 0;
+          boid.editProgress = 0;
+          boid.clickRipple = 1.0;
+        } else {
+          boid.vx = (boid.vx + (dx / dist) * 0.6) * 0.88;
+          boid.vy = (boid.vy + (dy / dist) * 0.6) * 0.88;
+          boid.x += boid.vx;
+          boid.y += boid.vy;
+        }
+      }
+
+      // 3. STATE: EDITING (Actively modifying element, typing tokens, progress bar advancing)
+      else if (boid.state === 'editing') {
+        boid.editProgress = Math.min(100, Math.floor((boid.stateTimer / 120) * 100));
+
+        // Subtle micro-movement while typing
+        boid.x = boid.box.x + boid.box.w * 0.35 + Math.sin(boid.stateTimer * 0.08) * 8;
+        boid.y = boid.box.y + boid.box.h * 0.45 + Math.cos(boid.stateTimer * 0.08) * 6;
+
+        if (boid.stateTimer > 130) {
+          // Editing completed
+          boid.state = 'completed';
+          boid.stateTimer = 0;
+          boid.clickRipple = 1.0;
+        }
+      }
+
+      // 4. STATE: COMPLETED (Flashes success checkmark, then flies to next element)
+      else if (boid.state === 'completed') {
+        if (boid.stateTimer > 40) {
+          this.assignNewTarget(boid);
+        }
+      }
+
+      // Ripple decay
+      if (boid.clickRipple > 0) {
+        boid.clickRipple = Math.max(0, boid.clickRipple - 0.04);
+      }
+
+      // Caret blink
+      boid.caretBlink = (boid.caretBlink + 1) % 50;
     });
   }
 }
