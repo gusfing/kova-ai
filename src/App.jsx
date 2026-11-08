@@ -20,6 +20,8 @@ import { ProjectsManagerModal } from './components/ProjectsManagerModal';
 import { AppSettingsModal } from './components/AppSettingsModal';
 import { KovaMagicPanel } from './components/KovaMagicPanel';
 import { DomInspectPanel } from './components/DomInspectPanel';
+import { HtmlTemplateImportModal } from './components/HtmlTemplateImportModal';
+import { WordPressChatModal } from './components/WordPressChatModal';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -190,6 +192,8 @@ export function App() {
   const [showProjectsModal, setShowProjectsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showMagicPanel, setShowMagicPanel] = useState(false);
+  const [showHtmlModal, setShowHtmlModal] = useState(false);
+  const [showWpChatModal, setShowWpChatModal] = useState(false);
   const [currentProjectName, setCurrentProjectName] = useState('Kova AI Flagship');
 
   // Slash commands state
@@ -1037,27 +1041,78 @@ Always provide complete, valid code so it can be automatically written to disk.`
                 onKeyDown={handleKeyDown}
               />
               <div className="composer-actions">
-                <div className="quick-commands">
-                  <span className="cmd-badge" onClick={() => applySlashCommand({ name: '/plan', prefixPrompt: 'Create an architectural plan for: ' })}>
+                <div className="quick-commands" style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                  {/* HTML TEMPLATE IMPORT CHAT BUTTON */}
+                  <button 
+                    type="button"
+                    className="chat-feature-pill primary" 
+                    onClick={() => setShowHtmlModal(true)}
+                    title="Import or paste raw HTML & CSS templates into Next.js"
+                  >
+                    <FileCode size={11} />
+                    <span>Import HTML</span>
+                  </button>
+
+                  {/* WORDPRESS CHAT INTEGRATION BUTTON */}
+                  <button 
+                    type="button"
+                    className="chat-feature-pill primary" 
+                    onClick={() => setShowWpChatModal(true)}
+                    title="Headless WordPress CMS integration, REST API & MCP"
+                  >
+                    <Database size={11} />
+                    <span>WordPress</span>
+                  </button>
+
+                  {/* SECTION GENERATOR SHORTCUTS */}
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => applySlashCommand({ name: '/hero', prefixPrompt: 'Build an Impeccable Hero component with obsidian dark theme and emerald accent: ' })}
+                    title="Generate Hero component"
+                  >
+                    Hero
+                  </span>
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => applySlashCommand({ name: '/bento', prefixPrompt: 'Create an interactive 4-card Bento grid for features: ' })}
+                    title="Generate Bento grid"
+                  >
+                    Bento
+                  </span>
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => applySlashCommand({ name: '/navbar', prefixPrompt: 'Add a floating glassmorphism Navbar with live status pill and CTAs: ' })}
+                    title="Generate Navbar"
+                  >
+                    Navbar
+                  </span>
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => applySlashCommand({ name: '/footer', prefixPrompt: 'Create a modern Footer with newsletter signup and social links: ' })}
+                    title="Generate Footer"
+                  >
+                    Footer
+                  </span>
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => applySlashCommand({ name: '/plan', prefixPrompt: 'Create an architectural plan for: ' })}
+                    title="Create architectural plan"
+                  >
                     /plan
                   </span>
-                  <span className="cmd-badge" onClick={() => setActiveTab('code')}>
-                    /code
-                  </span>
-                  <span className="cmd-badge" onClick={() => setActiveTab('diff')}>
-                    /diff
-                  </span>
-                  <span className="cmd-badge" onClick={() => setActiveTab('wp')}>
-                    /wp
-                  </span>
-                  <span className="cmd-badge" onClick={() => handleExportZip()}>
+                  <span 
+                    className="cmd-badge" 
+                    onClick={() => handleExportZip()}
+                    title="Bundle project as ZIP"
+                  >
                     /export
                   </span>
                 </div>
+
                 <button 
                   className="btn-send"
                   disabled={isGenerating || !input.trim()}
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                 >
                   {isGenerating ? 'Thinking…' : 'Generate'}
                 </button>
@@ -1467,6 +1522,23 @@ Always provide complete, valid code so it can be automatically written to disk.`
       {showSettingsModal && (
         <AppSettingsModal
           onClose={() => setShowSettingsModal(false)}
+        />
+      )}
+
+      {/* HTML TEMPLATE IMPORT MODAL */}
+      {showHtmlModal && (
+        <HtmlTemplateImportModal
+          onImportHtml={(prompt) => handleSend(prompt)}
+          onClose={() => setShowHtmlModal(false)}
+        />
+      )}
+
+      {/* WORDPRESS CHAT ACTIONS MODAL */}
+      {showWpChatModal && (
+        <WordPressChatModal
+          onDispatchAction={(prompt) => handleSend(prompt)}
+          onOpenBridgeTab={() => setActiveTab('wp')}
+          onClose={() => setShowWpChatModal(false)}
         />
       )}
     </div>

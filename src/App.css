@@ -2317,3 +2317,104 @@ body {
   background: #059669;
 }
 
+/* ========================================================
+   HTML TEMPLATE IMPORT & WORDPRESS CHAT MODALS
+   ======================================================== */
+
+.html-import-modal {
+  width: 680px;
+  max-width: 92vw;
+}
+
+.wp-chat-modal {
+  width: 620px;
+  max-width: 92vw;
+}
+
+.html-import-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #000;
+  border: 1px solid var(--border-subtle);
+  color: #f4f4f5;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+}
+
+.html-import-textarea:focus {
+  border-color: var(--accent-emerald);
+}
+
+.template-pick-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.template-pick-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.template-pick-card.active {
+  border-color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.template-preview-code {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #000;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #a1a1aa;
+  max-height: 55px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+}
+
+.chat-feature-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-feature-pill:hover {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.chat-feature-pill.primary {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.chat-feature-pill.primary:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: var(--accent-emerald);
+}
+
+
