@@ -14,6 +14,7 @@ import { CodeCanvas } from './components/CodeCanvas';
 import { DiffViewer } from './components/DiffViewer';
 import { WordPressBridge } from './components/WordPressBridge';
 import { TerminalDrawer } from './components/TerminalDrawer';
+import { SwarmRebuildOverlay } from './components/SwarmRebuildOverlay';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -107,6 +108,7 @@ export function App() {
     'src/components/landing/kova/KovaFooter.tsx',
     'src/app/page.tsx'
   ]);
+  const [swarmActive, setSwarmActive] = useState(false);
 
   // Slash commands state
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
@@ -1061,6 +1063,14 @@ Always provide complete, valid code so it can be automatically written to disk.`
                 </div>
 
                 <div className="preview-actions">
+                  <button 
+                    className={`tool-icon-btn ${swarmActive ? 'active' : ''}`} 
+                    onClick={() => setSwarmActive(!swarmActive)} 
+                    title="Toggle Swarm Multiplayer Cursors Simulation"
+                  >
+                    <Sparkles size={12} style={{ color: 'var(--accent-emerald)' }} />
+                    <span>Swarm Cursors</span>
+                  </button>
                   <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
                     <RefreshCw size={13} />
                     <span>Reload</span>
@@ -1082,6 +1092,11 @@ Always provide complete, valid code so it can be automatically written to disk.`
                     <span>Swarm Agent Active: {statusNote || 'Applying AST delta'}</span>
                   </div>
                 )}
+                {/* Swarm Multiplayer Cursors Canvas Overlay */}
+                <SwarmRebuildOverlay 
+                  active={isGenerating || swarmActive} 
+                  currentFile={statusNote || 'components/Hero.tsx'} 
+                />
                 <iframe 
                   ref={iframeRef}
                   src={previewUrl}
