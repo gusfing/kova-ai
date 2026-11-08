@@ -188,12 +188,7 @@ export function App() {
   const handleExportZip = async () => {
     setStatusNote('Bundling Next.js project to ZIP…');
     try {
-      const script = `Compress-Archive -Path '${workspacePath}\\src', '${workspacePath}\\package.json', '${workspacePath}\\tsconfig.json', '${workspacePath}\\tailwind.config.ts' -DestinationPath "$env:USERPROFILE\\Downloads\\kova-site-export.zip" -Force; "$env:USERPROFILE\\Downloads\\kova-site-export.zip"`;
-      const res = await invoke('execute_command', {
-        cmd: script,
-        cwd: workspacePath
-      });
-      const exportPath = res.trim() || 'Downloads\\kova-site-export.zip';
+      const exportPath = await invoke('export_project_zip', { workspacePath });
       setMessages(prev => [
         ...prev,
         {

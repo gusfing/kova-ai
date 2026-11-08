@@ -221,3 +221,4 @@ export function CodeCanvas({ workspacePath, onFileSaved, initialFile = 'src/comp
 }
 
 export default CodeCanvas;
+

@@ -161,3 +161,4 @@ export function matchSlashCommands(input) {
     cmd.category.toLowerCase().includes(query)
   );
 }
+

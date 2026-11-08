@@ -70,3 +70,4 @@ export function DiffViewer({ workspacePath, recentFiles = [] }) {
 }
 
 export default DiffViewer;
+

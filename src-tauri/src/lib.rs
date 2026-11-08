@@ -309,6 +309,31 @@ async fn run_codex_cli(prompt: String, cwd: Option<String>) -> Result<String, St
     .map_err(|e| format!("Async runtime error: {}", e))?
 }
 
+#[tauri::command]
+fn export_project_zip(workspace_path: String) -> Result<String, String> {
+    let home = std::env::var("USERPROFILE").unwrap_or_else(|_| ".".to_string());
+    let dest_path = format!("{}\\Downloads\\kova-site-export.zip", home);
+
+    let script = format!(
+        "Compress-Archive -Path '{}\\src', '{}\\package.json', '{}\\tsconfig.json' -DestinationPath '{}' -Force",
+        workspace_path.replace('\'', "''"),
+        workspace_path.replace('\'', "''"),
+        workspace_path.replace('\'', "''"),
+        dest_path.replace('\'', "''")
+    );
+
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-Command", &script])
+        .output()
+        .map_err(|e| format!("Failed to run export: {}", e))?;
+
+    if output.status.success() {
+        Ok(dest_path)
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).to_string())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -337,6 +362,7 @@ pub fn run() {
             write_file_content,
             list_dir_files,
             execute_command,
+            export_project_zip,
             probe_all_clis,
             query_lmstudio_models,
             send_lmstudio_chat,

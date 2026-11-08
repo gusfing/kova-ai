@@ -100,3 +100,4 @@ export function TerminalDrawer({ workspacePath }) {
 }
 
 export default TerminalDrawer;
+
