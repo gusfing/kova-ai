@@ -4,9 +4,16 @@ import {
   Sparkles, Terminal, Globe, RefreshCw, Smartphone, Tablet, Monitor, 
   Send, Layers, Server, Cpu, Database, CheckCircle2, AlertCircle, FileCode, Play, Bot,
   ChevronDown, ChevronRight, BrainCircuit, Activity, Wrench, ShieldCheck, X, Link, Radio,
-  Zap, Code2, Check, Settings, ExternalLink
+  Zap, Code2, Check, Settings, ExternalLink, Download, GitCompare, Eye, SlidersHorizontal
 } from 'lucide-react';
 import './App.css';
+
+import { SLASH_COMMANDS, matchSlashCommands } from './lib/slashCommands';
+import { SlashCommandMenu } from './components/SlashCommandMenu';
+import { CodeCanvas } from './components/CodeCanvas';
+import { DiffViewer } from './components/DiffViewer';
+import { WordPressBridge } from './components/WordPressBridge';
+import { TerminalDrawer } from './components/TerminalDrawer';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -94,12 +101,24 @@ export function App() {
   const [showEngineModal, setShowEngineModal] = useState(false);
   const [isProbing, setIsProbing] = useState(false);
 
+  // Workbench Stages: 'preview' | 'code' | 'diff' | 'wp' | 'terminal'
+  const [activeTab, setActiveTab] = useState('preview');
+  const [recentFilesModified, setRecentFilesModified] = useState([
+    'src/components/landing/kova/KovaFooter.tsx',
+    'src/app/page.tsx'
+  ]);
+
+  // Slash commands state
+  const [slashMenuOpen, setSlashMenuOpen] = useState(false);
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
+  const [matchedCommands, setMatchedCommands] = useState([]);
+
   // Chat state
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
       engine: 'Kova Universal Engine',
-      text: "I am Kova Studio Universal Engine. I can orchestrate OpenCode CLI, Claude Code CLI, Codex CLI, and local GPU models (LM Studio / Ollama) with real disk writing and live visual reload. What would you like to build?",
+      text: "I am Kova Studio Universal Engine. Type `/` in the chat to access slash commands (/plan, /code, /diff, /wp, /review, /polish, /export), or select your preferred engine and tell me what to build!",
       thoughts: ["Multi-CLI agent wrapper initialized with automated disk file write loop."],
       toolCalls: [],
       stats: null
@@ -115,6 +134,7 @@ export function App() {
   
   const iframeRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const composerTextareaRef = useRef(null);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -164,6 +184,139 @@ export function App() {
     setExpandedThoughts(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  // Export full project as ZIP to Downloads folder
+  const handleExportZip = async () => {
+    setStatusNote('Bundling Next.js project to ZIP…');
+    try {
+      const script = `Compress-Archive -Path '${workspacePath}\\src', '${workspacePath}\\package.json', '${workspacePath}\\tsconfig.json', '${workspacePath}\\tailwind.config.ts' -DestinationPath "$env:USERPROFILE\\Downloads\\kova-site-export.zip" -Force; "$env:USERPROFILE\\Downloads\\kova-site-export.zip"`;
+      const res = await invoke('execute_command', {
+        cmd: script,
+        cwd: workspacePath
+      });
+      const exportPath = res.trim() || 'Downloads\\kova-site-export.zip';
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          engine: 'Export Packager',
+          text: `📦 **Project Export Complete!**\n\nThe standalone Next.js 15 site has been compressed and saved to:\n\`${exportPath}\`\n\nReady to unzip and deploy anywhere (Vercel, Netlify, Cloudflare, VPS).`,
+          thoughts: ["Excludes node_modules and .next build caches for optimal zip size."],
+          toolCalls: [{ tool: 'export_zip', target: exportPath, status: 'saved to Downloads' }],
+          stats: null
+        }
+      ]);
+    } catch (e) {
+      alert(`Export failed: ${e}`);
+    } finally {
+      setStatusNote('');
+    }
+  };
+
+  // Handle typing in chat composer with slash command detection
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInput(val);
+    if (val.startsWith('/')) {
+      const matched = matchSlashCommands(val);
+      setMatchedCommands(matched);
+      setSlashMenuOpen(matched.length > 0);
+      setSlashSelectedIndex(0);
+    } else {
+      setSlashMenuOpen(false);
+    }
+  };
+
+  // Select / execute a slash command from the menu
+  const applySlashCommand = (cmd) => {
+    setSlashMenuOpen(false);
+    if (!cmd) return;
+
+    // Direct Workbench Actions
+    if (cmd.action === 'open-diff') {
+      setActiveTab('diff');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-code') {
+      setActiveTab('code');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-preview') {
+      setActiveTab('preview');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-terminal') {
+      setActiveTab('terminal');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'open-wp') {
+      setActiveTab('wp');
+      setInput('');
+      return;
+    }
+    if (cmd.action === 'export-zip') {
+      setInput('');
+      handleExportZip();
+      return;
+    }
+    if (cmd.action === 'clear-chat') {
+      setMessages([
+        {
+          role: 'assistant',
+          engine: 'Kova Universal Engine',
+          text: "Chat cleared. What would you like to build next?",
+          thoughts: [],
+          toolCalls: [],
+          stats: null
+        }
+      ]);
+      setInput('');
+      return;
+    }
+
+    // Commands with prompt prefixes
+    setInput(`${cmd.name} `);
+    composerTextareaRef.current?.focus();
+  };
+
+  // Keyboard navigation for slash commands & enter to send
+  const handleKeyDown = (e) => {
+    if (slashMenuOpen && matchedCommands.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev + 1) % matchedCommands.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev - 1 + matchedCommands.length) % matchedCommands.length);
+        return;
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        applySlashCommand(matchedCommands[slashSelectedIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setSlashMenuOpen(false);
+        return;
+      }
+    }
+
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (slashMenuOpen && matchedCommands.length > 0) {
+        applySlashCommand(matchedCommands[slashSelectedIndex]);
+      } else {
+        handleSend();
+      }
+    }
+  };
+
   // Extract file blocks from model output and write them directly to disk
   const extractAndApplyFiles = async (text, identifiedComp) => {
     const fileActions = [];
@@ -188,6 +341,7 @@ export function App() {
             content
           });
           fileActions.push({ tool: 'write_file', target: rawPath, status: 'written to disk' });
+          setRecentFilesModified(prev => Array.from(new Set([rawPath, ...prev])));
 
           // If the model wrote to 'src/components/Footer.jsx' or 'Footer.tsx', also sync into active 'src/components/landing/kova/KovaFooter.tsx'
           if (rawPath.toLowerCase().includes('footer') && !rawPath.includes('KovaFooter')) {
@@ -219,6 +373,7 @@ export function App() {
               content: code
             });
             fileActions.push({ tool: 'write_file', target: targetRel, status: 'written to disk' });
+            setRecentFilesModified(prev => Array.from(new Set([targetRel, ...prev])));
           } catch (e) {
             console.error("Fallback write error:", e);
           }
@@ -250,6 +405,9 @@ export function App() {
           const target = p.state?.input?.filePath || p.state?.title || p.state?.input?.command || 'action';
           const status = p.state?.status || 'completed';
           toolCalls.push({ tool: toolName, target, status });
+          if (p.state?.input?.filePath) {
+            setRecentFilesModified(prev => Array.from(new Set([p.state.input.filePath, ...prev])));
+          }
         } else if (ev.type === 'text' && ev.part?.text) {
           replyText += ev.part.text;
         } else if (ev.type === 'step_finish' && ev.part?.tokens) {
@@ -291,8 +449,46 @@ export function App() {
   const handleSend = async () => {
     if (!input.trim() || isGenerating) return;
 
-    const userText = input.trim();
+    let userText = input.trim();
     setInput('');
+    setSlashMenuOpen(false);
+
+    // Handle Slash Commands
+    if (userText.startsWith('/')) {
+      const parts = userText.split(' ');
+      const cmdName = parts[0].toLowerCase();
+      const rest = parts.slice(1).join(' ').trim();
+      const foundCmd = SLASH_COMMANDS.find(c => c.name.toLowerCase() === cmdName);
+
+      if (foundCmd) {
+        // Direct Action Commands
+        if (foundCmd.action === 'open-diff') { setActiveTab('diff'); return; }
+        if (foundCmd.action === 'open-code') { setActiveTab('code'); return; }
+        if (foundCmd.action === 'open-preview') { setActiveTab('preview'); return; }
+        if (foundCmd.action === 'open-terminal') { setActiveTab('terminal'); return; }
+        if (foundCmd.action === 'open-wp') { setActiveTab('wp'); return; }
+        if (foundCmd.action === 'export-zip') { handleExportZip(); return; }
+        if (foundCmd.action === 'clear-chat') {
+          setMessages([
+            {
+              role: 'assistant',
+              engine: 'Kova Universal Engine',
+              text: "Chat cleared. What would you like to build next?",
+              thoughts: [],
+              toolCalls: [],
+              stats: null
+            }
+          ]);
+          return;
+        }
+
+        // Prefix prompt transformation
+        if (foundCmd.prefixPrompt) {
+          userText = `${foundCmd.prefixPrompt}${rest || 'Apply standard execution.'}`;
+        }
+      }
+    }
+
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setIsGenerating(true);
 
@@ -332,7 +528,6 @@ export function App() {
           cwd: workspacePath
         });
 
-        // Also check if any files were written
         const fileActions = await extractAndApplyFiles(rawOutput, null);
         const lines = rawOutput.split(/\r?\n/);
         for (const line of lines) {
@@ -552,8 +747,19 @@ Always provide complete, valid code so it can be automatically written to disk.`
           </div>
         </div>
 
-        {/* SYSTEM STATUS PILLS & ENGINES BUTTON */}
+        {/* SYSTEM STATUS PILLS & WORKBENCH ACTIONS */}
         <div className="system-pills">
+          {/* EXPORT ZIP BUTTON */}
+          <button 
+            className="export-zip-btn" 
+            onClick={handleExportZip}
+            title="Download full project as ZIP to Downloads"
+          >
+            <Download size={13} style={{ color: 'var(--accent-emerald)' }} />
+            <span>Export ZIP</span>
+          </button>
+
+          {/* CONNECTED ENGINES MODAL TRIGGER */}
           <button 
             className="engines-modal-trigger"
             onClick={() => setShowEngineModal(true)}
@@ -723,27 +929,44 @@ Always provide complete, valid code so it can be automatically written to disk.`
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Composer */}
-          <div className="agent-composer">
+          {/* Composer with Slash Commands */}
+          <div className="agent-composer" style={{ position: 'relative' }}>
+            {/* Slash Command Autocomplete Popover */}
+            {slashMenuOpen && (
+              <SlashCommandMenu
+                commands={matchedCommands}
+                selectedIndex={slashSelectedIndex}
+                onSelect={applySlashCommand}
+                onClose={() => setSlashMenuOpen(false)}
+              />
+            )}
+
             <div className="composer-input-box">
               <textarea
+                ref={composerTextareaRef}
                 className="composer-textarea"
-                placeholder={`Ask ${getEngineDisplayLabel(selectedEngine)} to build components, refactor pages, or fix styling...`}
+                placeholder="Type a prompt or '/' for slash commands (/plan, /code, /diff, /wp, /export)..."
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
               />
               <div className="composer-actions">
                 <div className="quick-commands">
-                  <span className="cmd-badge" onClick={() => setInput('Build an Impeccable Hero component with obsidian dark theme and emerald accent in src/components/Hero.tsx')}>Hero</span>
-                  <span className="cmd-badge" onClick={() => setInput('Create an interactive 4-card Bento grid for AI features in src/components/FeatureBento.tsx')}>Bento</span>
-                  <span className="cmd-badge" onClick={() => setInput('Add a floating glassmorphism Navbar with live status pill in src/components/Navbar.tsx')}>Navbar</span>
-                  <span className="cmd-badge" onClick={() => setInput('Create a modern Footer with newsletter signup and social links in src/components/Footer.tsx')}>Footer</span>
+                  <span className="cmd-badge" onClick={() => applySlashCommand({ name: '/plan', prefixPrompt: 'Create an architectural plan for: ' })}>
+                    /plan
+                  </span>
+                  <span className="cmd-badge" onClick={() => setActiveTab('code')}>
+                    /code
+                  </span>
+                  <span className="cmd-badge" onClick={() => setActiveTab('diff')}>
+                    /diff
+                  </span>
+                  <span className="cmd-badge" onClick={() => setActiveTab('wp')}>
+                    /wp
+                  </span>
+                  <span className="cmd-badge" onClick={() => handleExportZip()}>
+                    /export
+                  </span>
                 </div>
                 <button 
                   className="btn-send"
@@ -757,58 +980,150 @@ Always provide complete, valid code so it can be automatically written to disk.`
           </div>
         </section>
 
-        {/* RIGHT: LIVE VISUAL PREVIEW OF RUNNING NEXT.JS SITE */}
+        {/* RIGHT: KRIKKIT MULTI-MODE WORKBENCH */}
         <section className="preview-pane">
+          {/* WORKBENCH STAGE TABS TOOLBAR */}
           <div className="preview-toolbar">
-            <div className="viewport-switch">
+            {/* TABS SWITCHER */}
+            <div className="workbench-tabs">
               <button 
-                className={`viewport-btn ${viewport === 'desktop' ? 'active' : ''}`}
-                onClick={() => setViewport('desktop')}
-                title="Desktop 100%"
+                className={`wb-tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
+                onClick={() => setActiveTab('preview')}
+                title="Live Next.js Visual Preview"
               >
-                <Monitor size={13} />
+                <Globe size={13} />
+                <span>Preview</span>
               </button>
               <button 
-                className={`viewport-btn ${viewport === 'tablet' ? 'active' : ''}`}
-                onClick={() => setViewport('tablet')}
-                title="Tablet 768px"
+                className={`wb-tab-btn ${activeTab === 'code' ? 'active' : ''}`}
+                onClick={() => setActiveTab('code')}
+                title="Code Canvas & File Browser"
               >
-                <Tablet size={13} />
+                <Code2 size={13} />
+                <span>Code Canvas</span>
               </button>
               <button 
-                className={`viewport-btn ${viewport === 'mobile' ? 'active' : ''}`}
-                onClick={() => setViewport('mobile')}
-                title="Mobile 390px"
+                className={`wb-tab-btn ${activeTab === 'diff' ? 'active' : ''}`}
+                onClick={() => setActiveTab('diff')}
+                title="Git & VFS Diff Viewer"
               >
-                <Smartphone size={13} />
+                <GitCompare size={13} />
+                <span>Diff</span>
+              </button>
+              <button 
+                className={`wb-tab-btn ${activeTab === 'wp' ? 'active' : ''}`}
+                onClick={() => setActiveTab('wp')}
+                title="Headless WordPress CMS Bridge"
+              >
+                <Database size={13} />
+                <span>WordPress</span>
+              </button>
+              <button 
+                className={`wb-tab-btn ${activeTab === 'terminal' ? 'active' : ''}`}
+                onClick={() => setActiveTab('terminal')}
+                title="Workspace Terminal Drawer"
+              >
+                <Terminal size={13} />
+                <span>Terminal</span>
               </button>
             </div>
 
-            <div className="preview-url-bar">
-              <Globe size={12} style={{ color: 'var(--text-muted)' }} />
-              <input 
-                type="text" 
-                value={previewUrl}
-                onChange={(e) => setPreviewUrl(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: 'inherit', width: '100%', outline: 'none' }}
-              />
-            </div>
+            {/* IF PREVIEW IS ACTIVE: VIEWPORT & URL BAR */}
+            {activeTab === 'preview' && (
+              <>
+                <div className="viewport-switch">
+                  <button 
+                    className={`viewport-btn ${viewport === 'desktop' ? 'active' : ''}`}
+                    onClick={() => setViewport('desktop')}
+                    title="Desktop 100%"
+                  >
+                    <Monitor size={13} />
+                  </button>
+                  <button 
+                    className={`viewport-btn ${viewport === 'tablet' ? 'active' : ''}`}
+                    onClick={() => setViewport('tablet')}
+                    title="Tablet 768px"
+                  >
+                    <Tablet size={13} />
+                  </button>
+                  <button 
+                    className={`viewport-btn ${viewport === 'mobile' ? 'active' : ''}`}
+                    onClick={() => setViewport('mobile')}
+                    title="Mobile 390px"
+                  >
+                    <Smartphone size={13} />
+                  </button>
+                </div>
 
-            <div className="preview-actions">
-              <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
-                <RefreshCw size={13} />
-                <span>Reload</span>
-              </button>
-            </div>
+                <div className="preview-url-bar">
+                  <Globe size={12} style={{ color: 'var(--text-muted)' }} />
+                  <input 
+                    type="text" 
+                    value={previewUrl}
+                    onChange={(e) => setPreviewUrl(e.target.value)}
+                    style={{ background: 'transparent', border: 'none', color: 'inherit', width: '100%', outline: 'none' }}
+                  />
+                </div>
+
+                <div className="preview-actions">
+                  <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
+                    <RefreshCw size={13} />
+                    <span>Reload</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="preview-viewport-container">
-            <iframe 
-              ref={iframeRef}
-              src={previewUrl}
-              className={`preview-frame ${viewport}`}
-              title="Live Preview"
-            />
+          {/* ACTIVE WORKBENCH STAGE CONTENT */}
+          <div className="preview-viewport-container" style={{ position: 'relative' }}>
+            {/* 1. LIVE PREVIEW */}
+            {activeTab === 'preview' && (
+              <>
+                {/* Swarm Multi-Agent Rebuild Indicator */}
+                {isGenerating && (
+                  <div className="swarm-indicator">
+                    <Sparkles size={12} />
+                    <span>Swarm Agent Active: {statusNote || 'Applying AST delta'}</span>
+                  </div>
+                )}
+                <iframe 
+                  ref={iframeRef}
+                  src={previewUrl}
+                  className={`preview-frame ${viewport}`}
+                  title="Live Preview"
+                />
+              </>
+            )}
+
+            {/* 2. CODE CANVAS & FILE BROWSER */}
+            {activeTab === 'code' && (
+              <CodeCanvas
+                workspacePath={workspacePath}
+                onFileSaved={handleReloadPreview}
+                initialFile="src/components/landing/kova/KovaFooter.tsx"
+              />
+            )}
+
+            {/* 3. DIFF VIEWER */}
+            {activeTab === 'diff' && (
+              <DiffViewer
+                workspacePath={workspacePath}
+                recentFiles={recentFilesModified}
+              />
+            )}
+
+            {/* 4. WORDPRESS BRIDGE */}
+            {activeTab === 'wp' && (
+              <WordPressBridge />
+            )}
+
+            {/* 5. TERMINAL DRAWER */}
+            {activeTab === 'terminal' && (
+              <TerminalDrawer
+                workspacePath={workspacePath}
+              />
+            )}
           </div>
         </section>
       </div>

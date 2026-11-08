@@ -34,6 +34,27 @@
 - **⚡ In-Chat Dynamic Model Switcher**  
   Switch engines and models on the fly directly inside the chat toolbar or header. Jump from DeepSeek V4.1 to Claude 3.7 or local Qwen 2.5 Coder in one click without restarting your session.
 
+- **⌨️ Interactive Claude Code Slash Commands**  
+  Type `/` in the chat to open the floating command autocomplete menu:
+  - `/plan <feature>`: Creates a step-by-step architectural breakdown with `<todos>` checklist.
+  - `/code`: Opens the full Code Canvas and file explorer.
+  - `/diff`: Reviews git and file modifications side-by-side.
+  - `/wp`: Inspects headless WordPress REST & GraphQL endpoints.
+  - `/terminal`: Opens the workspace terminal to run build commands.
+  - `/export`: Packages the entire Next.js project into a clean `.zip` archive.
+  - `/modularize`, `/review`, `/polish`, `/critique`, `/bolder`, `/quieter`, `/typeset`, `/audit`.
+
+- **🗂️ Krikkit Multi-Stage Workbench Tabs**  
+  Switch between 5 dedicated work views right from the top bar:
+  - **👁 Preview**: Live Next.js visual preview with responsive viewport controls.
+  - **💻 Code Canvas**: Full file browser tree and syntax-highlighted code editor with direct disk save (`Ctrl+S`).
+  - **📊 Diff Viewer**: Visual line-by-line additions and deletions for all agent modifications.
+  - **🔌 WordPress Bridge**: Live status of WordPress core (`127.0.0.1:8000`), Krikkit MCP plugin, and post hydration test.
+  - **📟 Terminal Drawer**: Integrated console to run `npm run build`, check git status, and view logs.
+
+- **📦 One-Click Project ZIP Export**  
+  Export your standalone Next.js 15 site directly to your Downloads folder at any time without node_modules bloat.
+
 - **💭 Real Collapsible Reasoning & Chain-of-Thought**  
   Watch the model think before writing code. Thinking blocks are streamed directly into an expandable **Agent Reasoning** accordion with token telemetry and zero generic responses.
 
