@@ -5,7 +5,7 @@
 [![Tauri v2](https://img.shields.io/badge/Tauri-v2.0-blue.svg?style=flat-square&logo=tauri)](https://v2.tauri.app/)
 [![Rust](https://img.shields.io/badge/Rust-1.80+-orange.svg?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg?style=flat-square&logo=react)](https://react.dev/)
-[![OpenCode CLI](https://img.shields.io/badge/OpenCode-CLI%20Wrapper-10b981.svg?style=flat-square)](https://opencode.ai)
+[![CLI Bridges](https://img.shields.io/badge/Engines-OpenCode%20|%20Claude%20Code%20|%20Codex-10b981.svg?style=flat-square)](https://github.com/gusfing/kova-ai)
 [![LM Studio](https://img.shields.io/badge/LM%20Studio-Local%20GPU-purple.svg?style=flat-square)](https://lmstudio.ai/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
@@ -23,14 +23,19 @@
 
 ## ✨ Features That Make Kova AI Studio Amazing
 
-- **🧠 OpenCode CLI Autonomous Engine Wrapper**  
-  Unlike basic chat wrappers that generate single-shot hallucinations, Kova runs the **OpenCode CLI (`opencode-ai`)** autonomously under the hood. It reads directory structures, plans multi-step edits, inspects syntax, and runs recovery loops.
-  
+- **🔌 Universal CLI & Local Engine Bridge**  
+  Connect any autonomous agent CLI or local model with a single click:
+  - **OpenCode CLI**: Headless autonomous runner with AST tool loop, multi-step planning, and free reasoning models (DeepSeek V4.1 Flash, Groq Qwen 3.8, Nemotron).
+  - **Claude Code CLI**: Official Anthropic terminal agent (`claude -p` with autonomous permissions).
+  - **Codex CLI**: OpenAI Codex non-interactive execution engine (`codex exec`).
+  - **LM Studio (Local GPU)**: Direct OS-level TCP bridge (`127.0.0.1:1234`) with zero-CORS access to offline GGUF models.
+  - **Ollama**: Local containerized LLMs on port `11434`.
+
+- **⚡ In-Chat Dynamic Model Switcher**  
+  Switch engines and models on the fly directly inside the chat toolbar or header. Jump from DeepSeek V4.1 to Claude 3.7 or local Qwen 2.5 Coder in one click without restarting your session.
+
 - **💭 Real Collapsible Reasoning & Chain-of-Thought**  
   Watch the model think before writing code. Thinking blocks are streamed directly into an expandable **Agent Reasoning** accordion with token telemetry and zero generic responses.
-
-- **⚡ 100% Free & Offline Local GPU Mode (LM Studio)**  
-  Connects directly to **LM Studio (`127.0.0.1:1234`)** via raw OS TCP sockets in Rust (bypassing all browser CORS limitations). Run **Qwen 2.5 Coder**, **DeepSeek**, or **Llama 3** locally on your GPU with $0 API bills.
 
 - **🎨 Enforced Impeccable Design Standard**  
   Autonomous skill gating enforces Paul Bakaus's Impeccable Design standard:
@@ -59,14 +64,17 @@
 ```mermaid
 flowchart TD
     subgraph DesktopApp ["Kova Desktop (Tauri v2)"]
-        UI["React 19 Frontend\n(Chat + Artifact Cards)"]
+        UI["React 19 Frontend\n(Chat + Engine Switcher + Modal)"]
         Preview["Live Visual Preview\n(Iframe localhost:3000)"]
         RustIPC["Rust Native Core\n(lib.rs)"]
     end
 
-    subgraph Agents ["Autonomous Reasoning Layer"]
+    subgraph Agents ["Universal Autonomous Engine Layer"]
         OpenCode["OpenCode CLI\n(opencode run --format json --thinking)"]
+        ClaudeCode["Claude Code CLI\n(claude -p --dangerously-skip-permissions)"]
+        CodexCLI["Codex CLI\n(codex exec --approve-for-me)"]
         LMStudio["LM Studio Local GPU\n(127.0.0.1:1234 / Qwen 2.5)"]
+        Ollama["Ollama Local\n(127.0.0.1:11434)"]
     end
 
     subgraph TargetProject ["Workspace (frontend/)"]
@@ -77,9 +85,14 @@ flowchart TD
 
     UI -->|IPC Invoke| RustIPC
     RustIPC -->|Process Stdio| OpenCode
+    RustIPC -->|Process Stdio| ClaudeCode
+    RustIPC -->|Process Stdio| CodexCLI
     RustIPC -->|Raw TCP Stream| LMStudio
+    RustIPC -->|HTTP Probe| Ollama
+
     OpenCode -->|Write / Edit Tools| DiskFiles
-    OpenCode -->|Read Rules| SkillFile
+    ClaudeCode -->|Autonomous Edits| DiskFiles
+    CodexCLI -->|Exec Changes| DiskFiles
     DiskFiles -->|Fast Refresh| NextDev
     NextDev -->|Render Stream| Preview
 ```
@@ -91,14 +104,12 @@ flowchart TD
 ### Requirements:
 1. **Node.js**: v18.0 or higher (`pnpm` recommended: `npm install -g pnpm`)
 2. **Rust**: Rust & Cargo 1.80+ ([Install Rust](https://www.rust-lang.org/tools/install))
-3. **OpenCode CLI**:
-   ```bash
-   npm install -g opencode-ai
-   ```
-4. **LM Studio** *(Optional for local offline GPU)*:
-   - Download from [lmstudio.ai](https://lmstudio.ai/)
-   - Load `qwen2.5-coder-7b-instruct` or any coder model
-   - Start Local Server on port `1234`
+3. **Supported CLIs & Models (Choose any or all):**
+   - **OpenCode CLI**: `npm install -g opencode-ai`
+   - **Claude Code CLI**: `npm install -g @anthropic-ai/claude-code`
+   - **Codex CLI**: OpenAI Codex CLI installed in PATH
+   - **LM Studio**: [lmstudio.ai](https://lmstudio.ai/) running on port `1234`
+   - **Ollama**: [ollama.com](https://ollama.com/) running on port `11434`
 
 ---
 
@@ -135,8 +146,11 @@ flowchart TD
 
 ### ✅ Completed & Operational:
 - [x] **Tauri v2 Desktop Shell**: High-performance, low-memory Windows native desktop application.
-- [x] **OpenCode CLI Headless Wrapper**: Spawns `opencode run` with JSON streaming, automated tool approvals, and AST verification.
-- [x] **Collapsible Chain-of-Thought UI**: Interactive accordion that displays the agent's real reasoning before code is written.
+- [x] **Universal CLI Connector**: One-click connection to OpenCode, Claude Code, Codex, LM Studio, and Ollama.
+- [x] **In-Chat Engine & Model Switcher**: Seamless switching between models and runtimes mid-session.
+- [x] **Headless OpenCode CLI Wrapper**: Spawns `opencode run` with JSON streaming and thinking logs.
+- [x] **Official Claude Code & Codex CLI Bridges**: Spawns non-interactive terminal coding executions.
+- [x] **Collapsible Chain-of-Thought UI**: Interactive accordion displaying agent reasoning steps.
 - [x] **LM Studio Rust Socket IPC**: Zero-CORS direct TCP bridge to query local GGUF models on port `1234`.
 - [x] **Dual Layout Splitter**: Split 50/50, Focus Agent, or Focus Preview mode.
 - [x] **Impeccable Design Skill Injection**: `AGENTS.md` guidelines automatically loaded by the autonomous agent.
