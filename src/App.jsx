@@ -806,49 +806,8 @@ Always provide complete, valid code so it can be automatically written to disk.`
       <header className="studio-header">
         <div className="brand-section">
           <div className="brand-badge">
-            <Sparkles size={16} />
-            <span>KOVA STUDIO</span>
-            <span className="brand-version">MULTI-CLI ENGINE</span>
-          </div>
-
-          {/* ENGINE PICKER IN HEADER */}
-          <div className="engine-select-pill">
-            <BrainCircuit size={13} style={{ color: 'var(--accent-emerald)' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Engine:</span>
-            <select 
-              className="studio-select" 
-              value={selectedEngine} 
-              onChange={(e) => setSelectedEngine(e.target.value)}
-            >
-              <optgroup label="OpenCode CLI (Autonomous Engine)">
-                <option value="opencode:opencode/deepseek-v4.1-flash-free">OpenCode: DeepSeek V4.1 Flash (Free + Reasoning)</option>
-                <option value="opencode:groq/qwen/qwen3.8-27b">OpenCode: Groq Qwen 3.8 27B (Ultra-Fast)</option>
-                <option value="opencode:groq/openai/gpt-oss-120b">OpenCode: Groq GPT-OSS 120B (High Reasoning)</option>
-                <option value="opencode:opencode/nemotron-3.5-lightning-free">OpenCode: Nemotron 3.5 Lightning (Free)</option>
-              </optgroup>
-              
-              <optgroup label="Claude Code CLI (Anthropic Official)">
-                <option value="claude:claude-3-7-sonnet">Claude Code CLI (Autonomous Agent)</option>
-              </optgroup>
-
-              <optgroup label="Codex CLI (OpenAI Official)">
-                <option value="codex:default">Codex CLI (OpenAI Autonomous Exec)</option>
-              </optgroup>
-
-              <optgroup label="LM Studio (Local GPU 127.0.0.1:1234)">
-                {cliStatus.lmstudio_models && cliStatus.lmstudio_models.length > 0 ? (
-                  cliStatus.lmstudio_models.map((m, idx) => (
-                    <option key={idx} value={`lmstudio:${m}`}>LM Studio: {m}</option>
-                  ))
-                ) : (
-                  <option value="lmstudio:qwen2.5-coder-7b-instruct-abliterated">LM Studio: Qwen 2.5 Coder 7B</option>
-                )}
-              </optgroup>
-
-              <optgroup label="Ollama (Local 127.0.0.1:11434)">
-                <option value="ollama:qwen2.5-coder">Ollama: Qwen 2.5 Coder</option>
-              </optgroup>
-            </select>
+            <Sparkles size={15} />
+            <span>KOVA</span>
           </div>
 
           {/* PROJECT SWITCHER */}
@@ -859,12 +818,51 @@ Always provide complete, valid code so it can be automatically written to disk.`
           >
             <Folder size={12} style={{ color: 'var(--accent-emerald)' }} />
             <span>{currentProjectName}</span>
+            <ChevronDown size={11} style={{ opacity: 0.6 }} />
           </button>
         </div>
 
-        {/* SYSTEM STATUS PILLS & WORKBENCH ACTIONS */}
+        {/* ENGINE PICKER IN HEADER CENTER */}
+        <div className="engine-select-pill">
+          <BrainCircuit size={13} style={{ color: 'var(--accent-emerald)' }} />
+          <select 
+            className="studio-select" 
+            value={selectedEngine} 
+            onChange={(e) => setSelectedEngine(e.target.value)}
+          >
+            <optgroup label="OpenCode CLI (Autonomous Engine)">
+              <option value="opencode:opencode/deepseek-v4.1-flash-free">OpenCode: DeepSeek V4.1 Flash (Free)</option>
+              <option value="opencode:groq/qwen/qwen3.8-27b">OpenCode: Groq Qwen 3.8 27B</option>
+              <option value="opencode:groq/openai/gpt-oss-120b">OpenCode: Groq GPT-OSS 120B</option>
+              <option value="opencode:opencode/nemotron-3.5-lightning-free">OpenCode: Nemotron 3.5 Lightning</option>
+            </optgroup>
+            
+            <optgroup label="Claude Code CLI (Anthropic Official)">
+              <option value="claude:claude-3-7-sonnet">Claude Code: 3.7 Sonnet</option>
+            </optgroup>
+
+            <optgroup label="Codex CLI (OpenAI Official)">
+              <option value="codex:default">Codex CLI: Autonomous</option>
+            </optgroup>
+
+            <optgroup label="LM Studio (Local GPU 127.0.0.1:1234)">
+              {cliStatus.lmstudio_models && cliStatus.lmstudio_models.length > 0 ? (
+                cliStatus.lmstudio_models.map((m, idx) => (
+                  <option key={idx} value={`lmstudio:${m}`}>LM Studio: {m}</option>
+                ))
+              ) : (
+                <option value="lmstudio:qwen2.5-coder-7b-instruct-abliterated">LM Studio: Qwen 2.5 Coder</option>
+              )}
+            </optgroup>
+
+            <optgroup label="Ollama (Local 127.0.0.1:11434)">
+              <option value="ollama:qwen2.5-coder">Ollama: Qwen 2.5 Coder</option>
+            </optgroup>
+          </select>
+        </div>
+
+        {/* ACTION BUTTONS ON HEADER RIGHT */}
         <div className="system-pills">
-          {/* KOVA MAGIC POLISH TOGGLE */}
           <button 
             className={`magic-polish-btn ${showMagicPanel ? 'active' : ''}`}
             onClick={() => setShowMagicPanel(!showMagicPanel)}
@@ -874,28 +872,24 @@ Always provide complete, valid code so it can be automatically written to disk.`
             <span>Magic Polish</span>
           </button>
 
-          {/* EXPORT ZIP BUTTON */}
           <button 
             className="export-zip-btn" 
             onClick={handleExportZip}
-            title="Download full project as ZIP to Downloads"
+            title="Export full project as ZIP to Downloads"
           >
             <Download size={13} style={{ color: 'var(--accent-emerald)' }} />
-            <span>Export ZIP</span>
+            <span>Export</span>
           </button>
 
-          {/* CONNECTED ENGINES MODAL TRIGGER */}
           <button 
             className="engines-modal-trigger"
             onClick={() => setShowEngineModal(true)}
             title="Manage Connected CLIs and Local Models"
           >
             <Zap size={13} style={{ color: 'var(--accent-emerald)' }} />
-            <span>Connected Engines</span>
-            <span className="badge-count">{connectedCount} Active</span>
+            <span>Engines ({connectedCount})</span>
           </button>
 
-          {/* SETTINGS MODAL TRIGGER */}
           <button 
             className="settings-btn"
             onClick={() => setShowSettingsModal(true)}
@@ -923,40 +917,13 @@ Always provide complete, valid code so it can be automatically written to disk.`
         <section className="agent-pane">
           <div className="agent-toolbar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Terminal size={14} style={{ color: 'var(--accent-emerald)' }} />
-              <span style={{ fontSize: '12px', fontWeight: 600 }}>Autonomous Engineering Chat</span>
+              <Bot size={14} style={{ color: 'var(--accent-emerald)' }} />
+              <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '-0.01em' }}>Autonomous Architect</span>
             </div>
 
-            {/* IN-CHAT MODEL SWITCHER */}
-            <div className="chat-model-switcher">
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Active Model:</span>
-              <select 
-                className="chat-select"
-                value={selectedEngine}
-                onChange={(e) => setSelectedEngine(e.target.value)}
-              >
-                <optgroup label="OpenCode CLI">
-                  <option value="opencode:opencode/deepseek-v4.1-flash-free">DeepSeek V4.1 Flash (Reasoning + Free)</option>
-                  <option value="opencode:groq/qwen/qwen3.8-27b">Groq Qwen 3.8 27B (Ultra-Fast)</option>
-                  <option value="opencode:groq/openai/gpt-oss-120b">Groq GPT-OSS 120B</option>
-                  <option value="opencode:opencode/nemotron-3.5-lightning-free">Nemotron 3.5 Lightning</option>
-                </optgroup>
-                <optgroup label="Claude Code CLI">
-                  <option value="claude:claude-3-7-sonnet">Claude 3.7 Sonnet (Official CLI)</option>
-                </optgroup>
-                <optgroup label="Codex CLI">
-                  <option value="codex:default">Codex CLI (Autonomous exec)</option>
-                </optgroup>
-                <optgroup label="Local GPU (LM Studio)">
-                  {cliStatus.lmstudio_models && cliStatus.lmstudio_models.length > 0 ? (
-                    cliStatus.lmstudio_models.map((m, idx) => (
-                      <option key={idx} value={`lmstudio:${m}`}>{m}</option>
-                    ))
-                  ) : (
-                    <option value="lmstudio:qwen2.5-coder-7b-instruct-abliterated">Qwen 2.5 Coder 7B</option>
-                  )}
-                </optgroup>
-              </select>
+            <div className="agent-active-badge">
+              <span className="pulsing-emerald-dot" />
+              <span>{getEngineDisplayLabel(selectedEngine)}</span>
             </div>
           </div>
 
@@ -1182,28 +1149,23 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   </button>
                 </div>
 
-                <div className="preview-url-bar">
-                  <Globe size={12} style={{ color: 'var(--text-muted)' }} />
-                  <input 
-                    type="text" 
-                    value={previewUrl}
-                    onChange={(e) => setPreviewUrl(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'inherit', width: '100%', outline: 'none' }}
-                  />
+                <div className="preview-host-pill" title="Live preview target">
+                  <span className="status-dot online" />
+                  <span>localhost:3000</span>
                 </div>
 
                 <div className="preview-actions">
                   <button 
                     className={`tool-icon-btn ${swarmActive ? 'active' : ''}`} 
                     onClick={() => setSwarmActive(!swarmActive)} 
-                    title="Toggle Swarm Multiplayer Cursors Simulation"
+                    title="Toggle Multiplayer Swarm Cursors"
                   >
                     <Sparkles size={12} style={{ color: swarmActive ? '#34d399' : 'var(--accent-emerald)' }} />
-                    <span>Swarm Cursors</span>
+                    <span>Swarm</span>
                     {swarmActive && <span className="pulsing-emerald-dot" />}
                   </button>
                   <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
-                    <RefreshCw size={13} />
+                    <RefreshCw size={12} />
                     <span>Reload</span>
                   </button>
                 </div>
@@ -1223,7 +1185,7 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   height: viewport === 'desktop' ? '100%' : '95%'
                 }}
               >
-                {/* 1. Ifame Surface */}
+                {/* 1. Iframe Surface */}
                 <iframe 
                   ref={iframeRef}
                   src={previewUrl}
@@ -1232,15 +1194,7 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   title="Live Preview"
                 />
 
-                {/* 2. Swarm Multi-Agent Rebuild Indicator */}
-                {(isGenerating || swarmActive) && (
-                  <div className="swarm-indicator">
-                    <Sparkles size={12} />
-                    <span>Swarm Active: {statusNote || '4 Autonomous Agents Simulating Live Changes'}</span>
-                  </div>
-                )}
-
-                {/* 3. Swarm Multiplayer Cursors Canvas Overlay (MOUNTED ON TOP OF IFRAME) */}
+                {/* 2. Swarm Multiplayer Cursors Canvas Overlay (MOUNTED ON TOP OF IFRAME) */}
                 <SwarmRebuildOverlay 
                   active={isGenerating || swarmActive} 
                   currentFile={statusNote || 'KovaHero.tsx'} 
