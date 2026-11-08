@@ -1,253 +1,168 @@
-import React, { useState } from 'react';
-import { 
-  Settings, Key, Cpu, Database, ShieldCheck, RefreshCw, 
-  Check, X, Eye, EyeOff, Save, ExternalLink, Sliders
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Settings, X, Globe, Save, Keyboard, Shield, Cpu, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { LAB_BTN_PRIMARY, LAB_BTN_OUTLINE } from '../lib/labConstants'
 
-export function AppSettingsModal({ onClose }) {
-  const [activeTab, setActiveTab] = useState('general');
-  const [autoSave, setAutoSave] = useState(true);
-  const [autoReload, setAutoReload] = useState(true);
-  const [autoApproveTools, setAutoApproveTools] = useState(true);
-  const [selectedTheme, setSelectedTheme] = useState('obsidian');
-
-  // API Keys state
-  const [keys, setKeys] = useState({
-    anthropic: '',
-    openai: '',
-    groq: '',
-    openrouter: '',
-    lmstudioUrl: 'http://127.0.0.1:1234',
-    ollamaUrl: 'http://127.0.0.1:11434',
-    wpUrl: 'http://127.0.0.1:8000',
-    wpKey: 'krikkit_mcp_bridge_key_2026'
-  });
-
-  const [savedSuccess, setSavedSuccess] = useState(false);
-
-  const handleSave = () => {
-    localStorage.setItem('kova_settings', JSON.stringify({
-      autoSave,
-      autoReload,
-      autoApproveTools,
-      selectedTheme,
-      keys
-    }));
-    setSavedSuccess(true);
-    setTimeout(() => {
-      setSavedSuccess(false);
-      onClose();
-    }, 1200);
-  };
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card settings-modal" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="modal-icon-badge">
-              <Settings size={18} style={{ color: 'var(--accent-emerald)' }} />
-            </div>
-            <div>
-              <h3 className="modal-title">Studio Settings</h3>
-              <p className="modal-subtitle">Configure AI model keys, local endpoints, and automation preferences</p>
-            </div>
-          </div>
-          <button className="btn-close-modal" onClick={onClose}>
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Tabs Bar */}
-        <div className="settings-nav-tabs">
-          <button 
-            className={`settings-nav-btn ${activeTab === 'general' ? 'active' : ''}`}
-            onClick={() => setActiveTab('general')}
-          >
-            <Sliders size={13} />
-            <span>General & Editor</span>
-          </button>
-          <button 
-            className={`settings-nav-btn ${activeTab === 'models' ? 'active' : ''}`}
-            onClick={() => setActiveTab('models')}
-          >
-            <Key size={13} />
-            <span>API Keys & Engines</span>
-          </button>
-          <button 
-            className={`settings-nav-btn ${activeTab === 'wordpress' ? 'active' : ''}`}
-            onClick={() => setActiveTab('wordpress')}
-          >
-            <Database size={13} />
-            <span>WordPress Headless</span>
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-          {/* TAB 1: GENERAL */}
-          {activeTab === 'general' && (
-            <div className="settings-section">
-              <div className="setting-row">
-                <div>
-                  <h4 className="setting-title">Auto-Save Modified Files</h4>
-                  <p className="setting-desc">Automatically write verified AST edits to disk without manual confirmation.</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={autoSave} 
-                  onChange={e => setAutoSave(e.target.checked)} 
-                  className="setting-toggle" 
-                />
-              </div>
-
-              <div className="setting-row">
-                <div>
-                  <h4 className="setting-title">Live Preview Auto-Reload</h4>
-                  <p className="setting-desc">Trigger Fast Refresh and iframe reload immediately when components are written.</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={autoReload} 
-                  onChange={e => setAutoReload(e.target.checked)} 
-                  className="setting-toggle" 
-                />
-              </div>
-
-              <div className="setting-row">
-                <div>
-                  <h4 className="setting-title">Autonomous Permission Bypassing</h4>
-                  <p className="setting-desc">Run Claude Code and OpenCode with <code>--dangerously-skip-permissions</code> for uninterrupted building.</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={autoApproveTools} 
-                  onChange={e => setAutoApproveTools(e.target.checked)} 
-                  className="setting-toggle" 
-                />
-              </div>
-
-              <div className="setting-row">
-                <div>
-                  <h4 className="setting-title">Studio Color Palette</h4>
-                  <p className="setting-desc">Kova Studio workspace theme and elevation contrast.</p>
-                </div>
-                <select 
-                  className="chat-select" 
-                  value={selectedTheme} 
-                  onChange={e => setSelectedTheme(e.target.value)}
-                >
-                  <option value="obsidian">Obsidian Dark (#09090b) • Default</option>
-                  <option value="midnight">Midnight Navy (#050814)</option>
-                  <option value="graphite">Deep Graphite (#121214)</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: API KEYS & LOCAL ENDPOINTS */}
-          {activeTab === 'models' && (
-            <div className="settings-section">
-              <div className="input-group">
-                <label className="input-label">Anthropic API Key (Claude 3.7 / 3.5)</label>
-                <input 
-                  type="password"
-                  className="modal-text-input"
-                  placeholder="sk-ant-api03-..."
-                  value={keys.anthropic}
-                  onChange={e => setKeys({ ...keys, anthropic: e.target.value })}
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">OpenAI API Key (Codex / GPT-4o / o3-mini)</label>
-                <input 
-                  type="password"
-                  className="modal-text-input"
-                  placeholder="sk-proj-..."
-                  value={keys.openai}
-                  onChange={e => setKeys({ ...keys, openai: e.target.value })}
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Groq API Key (Ultra-Fast Qwen 3.8 / GPT-OSS)</label>
-                <input 
-                  type="password"
-                  className="modal-text-input"
-                  placeholder="gsk_..."
-                  value={keys.groq}
-                  onChange={e => setKeys({ ...keys, groq: e.target.value })}
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">LM Studio Local Server Endpoint</label>
-                <input 
-                  type="text"
-                  className="modal-text-input"
-                  value={keys.lmstudioUrl}
-                  onChange={e => setKeys({ ...keys, lmstudioUrl: e.target.value })}
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Ollama Local Daemon Endpoint</label>
-                <input 
-                  type="text"
-                  className="modal-text-input"
-                  value={keys.ollamaUrl}
-                  onChange={e => setKeys({ ...keys, ollamaUrl: e.target.value })}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: WORDPRESS */}
-          {activeTab === 'wordpress' && (
-            <div className="settings-section">
-              <div className="input-group">
-                <label className="input-label">WordPress Site URL</label>
-                <input 
-                  type="text"
-                  className="modal-text-input"
-                  value={keys.wpUrl}
-                  onChange={e => setKeys({ ...keys, wpUrl: e.target.value })}
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Krikkit MCP Bridge Security Key</label>
-                <input 
-                  type="text"
-                  className="modal-text-input"
-                  value={keys.wpKey}
-                  onChange={e => setKeys({ ...keys, wpKey: e.target.value })}
-                />
-              </div>
-
-              <div className="info-box-setting">
-                <span>The WordPress MCP Bridge plugin is active in <code>backend/web/app/mu-plugins/krikkit-mcp-bridge.php</code>. It enables authenticated REST operations to <code>/wp-json/krikkit/v1/</code> with administrator permissions.</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button className="btn-close-secondary" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="editor-btn primary" onClick={handleSave}>
-            {savedSuccess ? <Check size={13} /> : <Save size={13} />}
-            <span>{savedSuccess ? 'Preferences Saved!' : 'Save Preferences'}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+function LabSwitch({ checked, onChange, label }) {
+    return (
+        <button
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            aria-label={label}
+            onClick={() => onChange?.(!checked)}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${
+                checked ? 'bg-emerald-500' : 'bg-zinc-800'
+            }`}
+        >
+            <span
+                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform shadow-md ${
+                    checked ? 'translate-x-5' : 'translate-x-0'
+                }`}
+            />
+        </button>
+    )
 }
 
-export default AppSettingsModal;
+function SettingsRow({ title, description, children }) {
+    return (
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 py-4 last:border-b-0">
+            <div className="min-w-0">
+                <p className="text-sm font-semibold text-white">{title}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">{description}</p>
+            </div>
+            <div className="shrink-0 pt-0.5">{children}</div>
+        </div>
+    )
+}
 
+export function AppSettingsModal({
+    open = false,
+    onClose = () => {},
+    onConfigureWordPress = null,
+}) {
+    const [autoSave, setAutoSave] = useState(() => localStorage.getItem('kova_auto_save') !== 'false')
+    const [showShortcuts, setShowShortcuts] = useState(true)
+
+    const handleToggleAutoSave = (val) => {
+        setAutoSave(val)
+        localStorage.setItem('kova_auto_save', val ? 'true' : 'false')
+    }
+
+    if (!open) return null
+
+    return (
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-dialog-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+        >
+            <div
+                className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+                onClick={onClose}
+            />
+
+            <div className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="size-9 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-200">
+                            <Settings className="size-5" />
+                        </div>
+                        <div>
+                            <h2 id="settings-dialog-title" className="text-base font-bold text-white tracking-tight">
+                                App Settings & Preferences
+                            </h2>
+                            <p className="text-xs text-zinc-400">Configure workspace auto-save, WordPress syncing, and shortcuts</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+                        aria-label="Close"
+                    >
+                        <X className="size-5" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto py-2 divide-y divide-white/10">
+                    <SettingsRow
+                        title="Auto Save"
+                        description="Automatically write generated components and edits to disk as you build."
+                    >
+                        <LabSwitch
+                            checked={autoSave}
+                            onChange={handleToggleAutoSave}
+                            label="Toggle Auto Save"
+                        />
+                    </SettingsRow>
+
+                    <SettingsRow
+                        title="WordPress Core Connection"
+                        description="Configure headless WordPress endpoint for live posts and WooCommerce sync."
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose()
+                                onConfigureWordPress?.()
+                            }}
+                            className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-400 hover:bg-sky-500/20 transition cursor-pointer flex items-center gap-1.5"
+                        >
+                            <Globe className="size-3.5" />
+                            <span>Configure</span>
+                        </button>
+                    </SettingsRow>
+
+                    <SettingsRow
+                        title="Local AI Engines"
+                        description="LM Studio (127.0.0.1:1234) and Ollama (127.0.0.1:11434) zero-token cost inference."
+                    >
+                        <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                            Ready
+                        </span>
+                    </SettingsRow>
+
+                    <div className="py-4">
+                        <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            <Keyboard className="size-4" />
+                            <span>Workspace Shortcuts</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                            <div className="flex justify-between items-center py-1">
+                                <span className="text-zinc-400">Trigger Slash Commands Menu</span>
+                                <kbd className="font-mono bg-zinc-900 border border-white/10 px-2 py-0.5 rounded text-emerald-400">/</kbd>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                                <span className="text-zinc-400">Send Chat Prompt</span>
+                                <kbd className="font-mono bg-zinc-900 border border-white/10 px-2 py-0.5 rounded text-zinc-300">Enter</kbd>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                                <span className="text-zinc-400">New Line in Chat</span>
+                                <kbd className="font-mono bg-zinc-900 border border-white/10 px-2 py-0.5 rounded text-zinc-300">Shift + Enter</kbd>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                                <span className="text-zinc-400">Dismiss Overlays / Modals</span>
+                                <kbd className="font-mono bg-zinc-900 border border-white/10 px-2 py-0.5 rounded text-zinc-300">Esc</kbd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-end border-t border-white/10 pt-4 shrink-0">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-xl bg-zinc-800 hover:bg-zinc-700 px-4 py-2 text-xs font-semibold text-white transition cursor-pointer"
+                    >
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+export default AppSettingsModal

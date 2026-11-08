@@ -20,8 +20,11 @@ import { ProjectsManagerModal } from './components/ProjectsManagerModal';
 import { AppSettingsModal } from './components/AppSettingsModal';
 import { KovaMagicPanel } from './components/KovaMagicPanel';
 import { DomInspectPanel } from './components/DomInspectPanel';
-import { HtmlTemplateImportModal } from './components/HtmlTemplateImportModal';
-import { WordPressChatModal } from './components/WordPressChatModal';
+import { ImportHubModal } from './components/ImportHubModal';
+import { WordPressConnectModal } from './components/WordPressConnectModal';
+import { ComposerPlusMenu } from './components/ComposerPlusMenu';
+import { ComposerEditPills } from './components/ComposerEditPills';
+import { SuggestionChips } from './components/SuggestionChips';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -192,9 +195,29 @@ export function App() {
   const [showProjectsModal, setShowProjectsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showMagicPanel, setShowMagicPanel] = useState(false);
-  const [showHtmlModal, setShowHtmlModal] = useState(false);
-  const [showWpChatModal, setShowWpChatModal] = useState(false);
+  const [showImportHubModal, setShowImportHubModal] = useState(false);
+  const [importHubInitialTab, setImportHubInitialTab] = useState('wp');
+  const [showWordPressModal, setShowWordPressModal] = useState(false);
+  const [inspectedTargets, setInspectedTargets] = useState([]);
   const [currentProjectName, setCurrentProjectName] = useState('Kova AI Flagship');
+
+  // Listen for Krikkit global dispatch events
+  useEffect(() => {
+    const handleOpenHub = (e) => {
+      const tab = e?.detail?.tab || 'wp';
+      setImportHubInitialTab(tab);
+      setShowImportHubModal(true);
+    };
+    const handleOpenWp = () => {
+      setShowWordPressModal(true);
+    };
+    window.addEventListener('lab-import-hub-open', handleOpenHub);
+    window.addEventListener('lab-wordpress-connect-open', handleOpenWp);
+    return () => {
+      window.removeEventListener('lab-import-hub-open', handleOpenHub);
+      window.removeEventListener('lab-wordpress-connect-open', handleOpenWp);
+    };
+  }, []);
 
   // Slash commands state
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
@@ -1019,7 +1042,7 @@ Always provide complete, valid code so it can be automatically written to disk.`
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Composer with Slash Commands */}
+          {/* Composer with Slash Commands & Krikkit Features */}
           <div className="agent-composer" style={{ position: 'relative' }}>
             {/* Slash Command Autocomplete Popover */}
             {slashMenuOpen && (
@@ -1031,25 +1054,68 @@ Always provide complete, valid code so it can be automatically written to disk.`
               />
             )}
 
-            <div className="composer-input-box">
-              <textarea
-                ref={composerTextareaRef}
-                className="composer-textarea"
-                placeholder="Type a prompt or '/' for slash commands (/plan, /code, /diff, /wp, /export)..."
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
+            {/* Krikkit Inspected Targets Edit Pills */}
+            {inspectedTargets.length > 0 && (
+              <div className="px-2 pt-1">
+                <ComposerEditPills
+                  targets={inspectedTargets}
+                  onRemove={(id) => setInspectedTargets(prev => prev.filter(t => t.id !== id))}
+                />
+              </div>
+            )}
+
+            {/* Krikkit Suggestion Chips */}
+            <div className="px-2 pb-1">
+              <SuggestionChips
+                items={['SaaS Landing', 'Headless Blog', 'WooCommerce Store', 'Portfolio & Agency', 'Waitlist Page']}
+                onPick={(chipPrompt) => {
+                  setInput(`Build ${chipPrompt}: `);
+                  composerTextareaRef.current?.focus();
+                }}
               />
+            </div>
+
+            <div className="composer-input-box">
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '6px 8px 0 8px' }}>
+                {/* Authentic Krikkit "+" Menu */}
+                <ComposerPlusMenu
+                  onOpenImportHub={(tab) => {
+                    setImportHubInitialTab(tab);
+                    setShowImportHubModal(true);
+                  }}
+                  onOpenWordPress={() => {
+                    setShowWordPressModal(true);
+                  }}
+                  onUploadComputer={() => {
+                    setImportHubInitialTab('html');
+                    setShowImportHubModal(true);
+                  }}
+                />
+
+                <textarea
+                  ref={composerTextareaRef}
+                  className="composer-textarea"
+                  placeholder="Type a prompt, click '+' for HTML/WP import, or '/' for slash commands..."
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  style={{ flex: 1, minHeight: '38px', padding: '4px 0' }}
+                />
+              </div>
+
               <div className="composer-actions">
                 <div className="quick-commands" style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
                   {/* HTML TEMPLATE IMPORT CHAT BUTTON */}
                   <button 
                     type="button"
                     className="chat-feature-pill primary" 
-                    onClick={() => setShowHtmlModal(true)}
+                    onClick={() => {
+                      setImportHubInitialTab('html');
+                      setShowImportHubModal(true);
+                    }}
                     title="Import or paste raw HTML & CSS templates into Next.js"
                   >
-                    <FileCode size={11} />
+                    <Code2 size={11} />
                     <span>Import HTML</span>
                   </button>
 
@@ -1057,10 +1123,10 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   <button 
                     type="button"
                     className="chat-feature-pill primary" 
-                    onClick={() => setShowWpChatModal(true)}
+                    onClick={() => setShowWordPressModal(true)}
                     title="Headless WordPress CMS integration, REST API & MCP"
                   >
-                    <Database size={11} />
+                    <Globe size={11} />
                     <span>WordPress</span>
                   </button>
 
@@ -1521,26 +1587,27 @@ Always provide complete, valid code so it can be automatically written to disk.`
       {/* APP SETTINGS MODAL */}
       {showSettingsModal && (
         <AppSettingsModal
+          open={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
+          onConfigureWordPress={() => setShowWordPressModal(true)}
         />
       )}
 
-      {/* HTML TEMPLATE IMPORT MODAL */}
-      {showHtmlModal && (
-        <HtmlTemplateImportModal
-          onImportHtml={(prompt) => handleSend(prompt)}
-          onClose={() => setShowHtmlModal(false)}
-        />
-      )}
+      {/* KRIKKIT IMPORT HUB MODAL */}
+      <ImportHubModal
+        open={showImportHubModal}
+        initialTab={importHubInitialTab}
+        onImportSuccess={() => {
+          handleReloadPreview();
+        }}
+        onClose={() => setShowImportHubModal(false)}
+      />
 
-      {/* WORDPRESS CHAT ACTIONS MODAL */}
-      {showWpChatModal && (
-        <WordPressChatModal
-          onDispatchAction={(prompt) => handleSend(prompt)}
-          onOpenBridgeTab={() => setActiveTab('wp')}
-          onClose={() => setShowWpChatModal(false)}
-        />
-      )}
+      {/* KRIKKIT WORDPRESS CONNECT MODAL */}
+      <WordPressConnectModal
+        open={showWordPressModal}
+        onClose={() => setShowWordPressModal(false)}
+      />
     </div>
   );
 }

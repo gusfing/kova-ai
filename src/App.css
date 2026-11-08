@@ -13,7 +13,34 @@
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
+
+  /* Krikkit theme compatibility tokens */
+  --color-krikkit-canvas: #09090b;
+  --color-krikkit-surface: #121215;
+  --color-krikkit-soft: #18181b;
+  --color-krikkit-line: rgba(255, 255, 255, 0.1);
+  --color-krikkit-fg: #f4f4f5;
+  --color-krikkit-fg-soft: #d4d4d8;
+  --color-krikkit-muted: #a1a1aa;
+  --color-krikkit-subtle: #71717a;
+  --color-krikkit-fill: #10b981;
+  --color-krikkit-on-fill: #ffffff;
+  --color-accent: #10b981;
+  --color-accent-foreground: #ffffff;
 }
+
+/* Krikkit utility mappings */
+.bg-krikkit-canvas { background-color: var(--color-krikkit-canvas); }
+.bg-krikkit-surface { background-color: var(--color-krikkit-surface); }
+.bg-krikkit-soft { background-color: var(--color-krikkit-soft); }
+.border-krikkit-line { border-color: var(--color-krikkit-line); }
+.text-krikkit-fg { color: var(--color-krikkit-fg); }
+.text-krikkit-fg-soft { color: var(--color-krikkit-fg-soft); }
+.text-krikkit-muted { color: var(--color-krikkit-muted); }
+.text-krikkit-subtle { color: var(--color-krikkit-subtle); }
+.bg-accent { background-color: var(--color-accent); }
+.text-accent { color: var(--color-accent); }
+.text-accent-foreground { color: var(--color-accent-foreground); }
 
 * {
   box-sizing: border-box;
