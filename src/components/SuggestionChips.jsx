@@ -24,7 +24,7 @@ export function SuggestionChips({ items = [], onPick, disabled = false }) {
                         type="button"
                         disabled={disabled}
                         onClick={() => onPick?.(prompt || label)}
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-colors ${LAB_BTN_OUTLINE}`}
+                        className="rounded-full px-2.5 py-0.5 text-xs font-medium text-zinc-300 bg-zinc-900/90 border border-white/10 hover:border-emerald-500/40 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer shadow-xs"
                     >
                         {label}
                     </button>
@@ -34,3 +34,4 @@ export function SuggestionChips({ items = [], onPick, disabled = false }) {
     )
 }
 export default SuggestionChips
+
