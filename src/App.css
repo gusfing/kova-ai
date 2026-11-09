@@ -50,17 +50,12 @@
 }
 
 button {
-  background: transparent;
-  color: inherit;
-  border: none;
   font-family: inherit;
-  font-size: inherit;
   cursor: pointer;
 }
 
 input, select, textarea {
   font-family: inherit;
-  font-size: inherit;
 }
 
 body {
@@ -2458,5 +2453,284 @@ body {
   background: rgba(16, 185, 129, 0.25);
   border-color: var(--accent-emerald);
 }
+
+/* ========================================================
+   AUTHENTIC KRIKKIT IMPORT HUB & WORDPRESS MODAL STYLES
+   ======================================================== */
+
+.hub-modal-card {
+  width: 90%;
+  max-width: 680px;
+  background: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 88vh;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.hub-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hub-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hub-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hub-tab-btn.active.wp {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.hub-tab-btn.active.html {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.hub-tab-btn.active.github {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.hub-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #09090b;
+}
+
+.hub-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f4f4f5;
+  margin-bottom: 6px;
+}
+
+.hub-sublabel {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.hub-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f4f4f5;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.hub-input:focus {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 0 1px var(--accent-emerald);
+}
+
+.hub-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e4e4e7;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  min-height: 140px;
+  transition: all 0.15s ease;
+}
+
+.hub-textarea:focus {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 0 1px var(--accent-emerald);
+}
+
+.hub-starter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.hub-starter-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hub-starter-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.hub-starter-card.active {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
+}
+
+.hub-starter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-starter-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hub-starter-desc {
+  font-size: 10.5px;
+  color: #a1a1aa;
+  line-height: 1.4;
+}
+
+.hub-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.hub-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hub-divider-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-hub-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #10b981;
+  color: #000000;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-hub-primary:hover:not(:disabled) {
+  background: #34d399;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.btn-hub-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-hub-primary.sky {
+  background: #38bdf8;
+  color: #000000;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+}
+
+.btn-hub-primary.sky:hover:not(:disabled) {
+  background: #7dd3fc;
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.35);
+}
+
+.btn-hub-primary.amber {
+  background: #f59e0b;
+  color: #000000;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.btn-hub-primary.amber:hover:not(:disabled) {
+  background: #fbbf24;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+}
+
+.hub-status-alert {
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.hub-status-alert.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.hub-info-box {
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #a1a1aa;
+  line-height: 1.5;
+}
+
 
 

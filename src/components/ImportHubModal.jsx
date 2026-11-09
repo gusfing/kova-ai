@@ -269,121 +269,97 @@ export default function ImportedTemplate() {
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            className="modal-backdrop"
+            onClick={onClose}
         >
-            <div
-                className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
-            />
-
-            <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="hub-modal-card" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                            <Sparkles className="size-5" />
+                <div className="modal-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className="modal-icon-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+                            <Sparkles size={18} style={{ color: 'var(--accent-emerald)' }} />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-white tracking-tight">Krikkit Import Hub</h2>
-                            <p className="text-xs text-zinc-400">Import WordPress starters, HTML/CSS templates, or GitHub repositories</p>
+                            <h2 className="modal-title">Krikkit Import Hub</h2>
+                            <p className="modal-subtitle">Import WordPress starters, HTML/CSS templates, or GitHub repositories</p>
                         </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+                        className="btn-close-modal"
                         aria-label="Close"
                     >
-                        <X className="size-5" />
+                        <X size={16} />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-white/10 shrink-0 mt-3">
+                <div className="hub-tab-bar">
                     <button
                         type="button"
                         onClick={() => setTab('wp')}
-                        className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
-                            tab === 'wp'
-                                ? 'border-sky-500 text-sky-400 bg-sky-500/5'
-                                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-                        }`}
+                        className={`hub-tab-btn wp ${tab === 'wp' ? 'active' : ''}`}
                     >
-                        <Globe className="size-3.5" />
+                        <Globe size={14} />
                         <span>WordPress Starters</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setTab('html')}
-                        className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
-                            tab === 'html'
-                                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-                        }`}
+                        className={`hub-tab-btn html ${tab === 'html' ? 'active' : ''}`}
                     >
-                        <Code2 className="size-3.5" />
+                        <Code2 size={14} />
                         <span>HTML / CSS Template</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setTab('github')}
-                        className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
-                            tab === 'github'
-                                ? 'border-amber-500 text-amber-400 bg-amber-500/5'
-                                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-                        }`}
+                        className={`hub-tab-btn github ${tab === 'github' ? 'active' : ''}`}
                     >
-                        <GitBranch className="size-3.5" />
+                        <GitBranch size={14} />
                         <span>GitHub Repository</span>
                     </button>
                 </div>
 
                 {/* Body Content */}
-                <div className="flex-1 overflow-y-auto py-4 space-y-4">
+                <div className="hub-modal-body">
                     {/* Status Alert */}
                     {status && (
-                        <div className={`p-3 rounded-xl text-xs flex items-center gap-2.5 ${
-                            status.ok
-                                ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-                        }`}>
-                            {status.ok ? <CheckCircle2 className="size-4 shrink-0 text-emerald-400" /> : <AlertCircle className="size-4 shrink-0 text-rose-400" />}
+                        <div className={`hub-status-alert ${status.ok ? '' : 'error'}`}>
+                            {status.ok ? <CheckCircle2 size={16} style={{ flexShrink: 0 }} /> : <AlertCircle size={16} style={{ flexShrink: 0 }} />}
                             <span>{status.message}</span>
                         </div>
                     )}
 
                     {/* Tab 1: WordPress Themes */}
                     {tab === 'wp' && (
-                        <form onSubmit={handleMountWordPressStarter} className="space-y-4">
+                        <form onSubmit={handleMountWordPressStarter} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                                <label className="hub-label">
                                     Select Production Starter:
                                 </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div className="hub-starter-grid">
                                     {STARTER_THEMES.map((th) => (
                                         <div
                                             key={th.id}
                                             onClick={() => setSelectedTheme(th.id)}
-                                            className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                                                selectedTheme === th.id
-                                                    ? 'border-sky-500 bg-sky-500/10 shadow-sm'
-                                                    : 'border-white/10 bg-zinc-900/60 hover:border-white/20'
-                                            }`}
+                                            className={`hub-starter-card ${selectedTheme === th.id ? 'active' : ''}`}
                                         >
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-base">{th.icon}</span>
-                                                <span className="text-xs font-bold text-white">{th.name}</span>
+                                            <div className="hub-starter-header">
+                                                <span style={{ fontSize: '16px' }}>{th.icon}</span>
+                                                <span className="hub-starter-title">{th.name}</span>
                                             </div>
-                                            <p className="text-[11px] text-zinc-400 leading-relaxed">{th.desc}</p>
+                                            <p className="hub-starter-desc">{th.desc}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                                <label className="hub-label">
                                     WordPress Core Endpoint URL:
                                 </label>
                                 <input
@@ -391,9 +367,9 @@ export default function ImportedTemplate() {
                                     value={wpUrl}
                                     onChange={(e) => setWpUrl(e.target.value)}
                                     placeholder="http://127.0.0.1:8000"
-                                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-sky-500 focus:outline-none"
+                                    className="hub-input"
                                 />
-                                <span className="block mt-1 text-[10px] text-zinc-500">
+                                <span className="hub-sublabel">
                                     Uses managed local WordPress or your remote instance via REST API.
                                 </span>
                             </div>
@@ -401,9 +377,9 @@ export default function ImportedTemplate() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-2.5 rounded-xl font-bold text-xs bg-sky-500 hover:bg-sky-400 text-black transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"
+                                className="btn-hub-primary sky"
                             >
-                                {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                                {loading ? <Loader2 size={15} className="spinning" /> : <Sparkles size={15} />}
                                 <span>{loading ? 'Mounting Starter...' : 'Mount Selected WordPress Starter'}</span>
                             </button>
                         </form>
@@ -411,28 +387,33 @@ export default function ImportedTemplate() {
 
                     {/* Tab 2: HTML / CSS Template */}
                     {tab === 'html' && (
-                        <form onSubmit={handleImportHtml} className="space-y-4">
+                        <form onSubmit={handleImportHtml} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                                <label className="hub-label">
                                     Upload HTML File
                                 </label>
                                 <input
                                     type="file"
                                     accept=".html,.htm"
                                     onChange={handleFileUpload}
-                                    className="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer"
+                                    style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        fontSize: '11px',
+                                        color: '#a1a1aa'
+                                    }}
                                 />
                                 {htmlFileName && (
-                                    <span className="block mt-1 text-[11px] text-emerald-400 font-mono">
+                                    <span style={{ display: 'block', marginTop: '6px', fontSize: '11px', color: '#34d399', fontFamily: 'monospace' }}>
                                         Selected: {htmlFileName}
                                     </span>
                                 )}
                             </div>
 
-                            <div className="relative flex py-1 items-center">
-                                <div className="flex-grow border-t border-white/10" />
-                                <span className="flex-shrink mx-3 text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Or Paste Raw HTML Code</span>
-                                <div className="flex-grow border-t border-white/10" />
+                            <div className="hub-divider">
+                                <div className="hub-divider-line" />
+                                <span className="hub-divider-text">Or Paste Raw HTML Code</span>
+                                <div className="hub-divider-line" />
                             </div>
 
                             <div>
@@ -441,16 +422,16 @@ export default function ImportedTemplate() {
                                     value={htmlCode}
                                     onChange={(e) => setHtmlCode(e.target.value)}
                                     placeholder="<!DOCTYPE html>&#10;<html>&#10;  <head><title>My Website</title></head>&#10;  <body>&#10;    <h1>Hello World</h1>&#10;  </body>&#10;</html>"
-                                    className="w-full rounded-xl border border-white/10 bg-zinc-900 p-3 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:border-emerald-500 focus:outline-none"
+                                    className="hub-textarea"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading || !htmlCode.trim()}
-                                className="w-full py-2.5 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-black transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"
+                                className="btn-hub-primary"
                             >
-                                {loading ? <Loader2 className="size-4 animate-spin" /> : <Code2 className="size-4" />}
+                                {loading ? <Loader2 size={15} className="spinning" /> : <Code2 size={15} />}
                                 <span>{loading ? 'Converting & Mounting...' : 'Convert & Import HTML Template'}</span>
                             </button>
                         </form>
@@ -458,9 +439,9 @@ export default function ImportedTemplate() {
 
                     {/* Tab 3: GitHub Repository */}
                     {tab === 'github' && (
-                        <form onSubmit={handleImportGithub} className="space-y-4">
+                        <form onSubmit={handleImportGithub} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                                <label className="hub-label">
                                     GitHub Repository URL
                                 </label>
                                 <input
@@ -468,12 +449,12 @@ export default function ImportedTemplate() {
                                     value={repoUrl}
                                     onChange={(e) => setRepoUrl(e.target.value)}
                                     placeholder="https://github.com/username/repository"
-                                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                                    className="hub-input"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                                <label className="hub-label">
                                     Branch
                                 </label>
                                 <input
@@ -481,20 +462,20 @@ export default function ImportedTemplate() {
                                     value={branch}
                                     onChange={(e) => setBranch(e.target.value)}
                                     placeholder="main"
-                                    className="w-full rounded-xl border border-white/10 bg-zinc-900 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                                    className="hub-input"
                                 />
                             </div>
 
-                            <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-3 text-[11px] text-zinc-400 leading-relaxed">
+                            <div className="hub-info-box">
                                 💡 Kova Studio clones the repository, detects components, and hydrates them directly into your live workspace dev server.
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading || !repoUrl.trim()}
-                                className="w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-black transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"
+                                className="btn-hub-primary amber"
                             >
-                                {loading ? <Loader2 className="size-4 animate-spin" /> : <GitBranch className="size-4" />}
+                                {loading ? <Loader2 size={15} className="spinning" /> : <GitBranch size={15} />}
                                 <span>{loading ? 'Cloning & Importing...' : 'Clone & Import Repository'}</span>
                             </button>
                         </form>
