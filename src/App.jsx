@@ -1398,15 +1398,21 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   <button 
                     className={`tool-icon-btn ${swarmActive ? 'active' : ''}`} 
                     onClick={() => setSwarmActive(!swarmActive)} 
-                    title="Toggle Multiplayer Swarm Cursors"
+                    title="Toggle Multiplayer Swarm Cursors (Figma Style)"
+                    style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                   >
-                    <Sparkles size={12} style={{ color: swarmActive ? '#34d399' : 'var(--accent-emerald)' }} />
-                    <span>Swarm</span>
+                    <Sparkles size={12} style={{ color: swarmActive ? '#34d399' : 'var(--accent-emerald)', flexShrink: 0 }} />
+                    <span style={{ whiteSpace: 'nowrap' }}>Swarm</span>
                     {swarmActive && <span className="pulsing-emerald-dot" />}
                   </button>
-                  <button className="tool-icon-btn" onClick={handleReloadPreview} title="Reload Preview">
-                    <RefreshCw size={12} />
-                    <span>Reload</span>
+                  <button 
+                    className="tool-icon-btn" 
+                    onClick={handleReloadPreview} 
+                    title="Reload Preview"
+                    style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                  >
+                    <RefreshCw size={12} style={{ flexShrink: 0 }} />
+                    <span style={{ whiteSpace: 'nowrap' }}>Reload</span>
                   </button>
                 </div>
               </>

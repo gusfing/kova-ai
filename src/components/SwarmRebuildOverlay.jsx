@@ -73,77 +73,55 @@ export function SwarmRebuildOverlay({ active = false, currentFile = null, classN
                 ctx.scale(dpr, dpr)
 
                 simRef.current.boids.forEach(boid => {
-                    // 1. Draw subtle bounding box when drawing a component
-                    if (boid.box && boid.boxProgress > 0) {
-                        ctx.save()
-                        ctx.strokeStyle = boid.color
-                        ctx.lineWidth = 1.2
-                        ctx.setLineDash([4, 4])
-                        ctx.strokeRect(
-                            boid.box.x,
-                            boid.box.y,
-                            boid.box.w * boid.boxProgress,
-                            boid.box.h * boid.boxProgress
-                        )
-                        ctx.restore()
-                    }
-
-                    // 2. Draw Figma-Style Cursor Arrow
+                    // 1. Draw Figma-Style Pointer Arrow
                     ctx.save()
                     ctx.translate(boid.x, boid.y)
 
-                    ctx.shadowColor = 'rgba(0,0,0,0.4)'
-                    ctx.shadowBlur = 6
+                    ctx.shadowColor = 'rgba(0,0,0,0.35)'
+                    ctx.shadowBlur = 4
                     ctx.shadowOffsetY = 2
 
                     ctx.beginPath()
                     ctx.moveTo(0, 0)
-                    ctx.lineTo(0, 15)
-                    ctx.lineTo(4, 11)
-                    ctx.lineTo(8, 18)
-                    ctx.lineTo(11, 16)
-                    ctx.lineTo(7, 9)
-                    ctx.lineTo(13, 9)
+                    ctx.lineTo(0, 13)
+                    ctx.lineTo(3.5, 9.5)
+                    ctx.lineTo(7, 15)
+                    ctx.lineTo(9.5, 13.5)
+                    ctx.lineTo(6, 8)
+                    ctx.lineTo(11, 8)
                     ctx.closePath()
 
                     ctx.fillStyle = boid.color
                     ctx.fill()
                     ctx.strokeStyle = '#ffffff'
-                    ctx.lineWidth = 1.2
+                    ctx.lineWidth = 1
                     ctx.stroke()
                     ctx.restore()
 
-                    // 3. Draw Agent Name & Activity Pill Badge
+                    // 2. Draw Compact Name Pill (Figma style, no bulky box)
                     ctx.save()
-                    const badgeX = boid.x + 14
-                    const badgeY = boid.y + 12
-                    const text = `${boid.name}: ${boid.actionLabel}`
-                    ctx.font = '600 11px system-ui, -apple-system, sans-serif'
-                    const textWidth = ctx.measureText(text).width
-                    const badgeWidth = textWidth + 16
-                    const badgeHeight = 22
+                    const badgeX = boid.x + 10
+                    const badgeY = boid.y + 10
+                    const displayName = boid.name.split(' ')[0] // e.g. "Architect", "UI", "Tailwind", "WordPress"
+                    ctx.font = '600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                    const textWidth = ctx.measureText(displayName).width
+                    const badgeWidth = textWidth + 10
+                    const badgeHeight = 16
 
                     ctx.beginPath()
                     if (ctx.roundRect) {
-                        ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 11)
+                        ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 4)
                     } else {
                         ctx.rect(badgeX, badgeY, badgeWidth, badgeHeight)
                     }
                     ctx.fillStyle = boid.color
                     ctx.fill()
-                    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
-                    ctx.lineWidth = 1
-                    ctx.stroke()
+                    ctx.shadowColor = 'rgba(0,0,0,0.25)'
+                    ctx.shadowBlur = 3
 
-                    // Text
+                    // Text inside badge
                     ctx.fillStyle = '#ffffff'
-                    ctx.fillText(text, badgeX + 8, badgeY + 15)
-
-                    // Blinking caret
-                    if (boid.caretBlink < 30) {
-                        ctx.fillStyle = '#ffffff'
-                        ctx.fillRect(badgeX + 8 + textWidth + 2, badgeY + 6, 2, 10)
-                    }
+                    ctx.fillText(displayName, badgeX + 5, badgeY + 12)
 
                     ctx.restore()
                 })
