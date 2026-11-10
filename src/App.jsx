@@ -25,6 +25,13 @@ import { WordPressConnectModal } from './components/WordPressConnectModal';
 import { ComposerPlusMenu } from './components/ComposerPlusMenu';
 import { ComposerEditPills } from './components/ComposerEditPills';
 import { SuggestionChips } from './components/SuggestionChips';
+import { FilesBrowser } from './components/FilesBrowser';
+import { FileJumpOverlay } from './components/FileJumpOverlay';
+import { SaveTray } from './components/SaveTray';
+import { PublishModal } from './components/PublishModal';
+import { SeedCustomizeModal } from './components/SeedCustomizeModal';
+import { ConnectDatastoreModal } from './components/ConnectDatastoreModal';
+import { WriteFileCard, EditFileCard, ShellCard, TodoCard, RuntimeErrorCard } from './components/toolCards';
 
 const DEFAULT_WORKSPACE = "c:\\Users\\ks209\\Desktop\\wordpress ai\\frontend";
 
@@ -198,8 +205,32 @@ export function App() {
   const [showImportHubModal, setShowImportHubModal] = useState(false);
   const [importHubInitialTab, setImportHubInitialTab] = useState('wp');
   const [showWordPressModal, setShowWordPressModal] = useState(false);
+  const [showFileJump, setShowFileJump] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showSeedCustomizeModal, setShowSeedCustomizeModal] = useState(false);
+  const [seedToCustomize, setSeedToCustomize] = useState({ title: 'SaaS Platform', prompt: 'Build a modern SaaS landing page.' });
+  const [showDatastoreModal, setShowDatastoreModal] = useState(false);
+  const [leftRailTab, setLeftRailTab] = useState('chat'); // 'chat' | 'files'
+  const [dirtyFilesCount, setDirtyFilesCount] = useState(0);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('kova_auto_save') !== 'false');
   const [inspectedTargets, setInspectedTargets] = useState([]);
   const [currentProjectName, setCurrentProjectName] = useState('Kova AI Flagship');
+
+  // Global Keyboard Shortcuts (Ctrl+P for File Jump, Ctrl+S for Save)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        setShowFileJump(prev => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        setDirtyFilesCount(0);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Listen for Krikkit global dispatch events
   useEffect(() => {
@@ -891,12 +922,30 @@ Always provide complete, valid code so it can be automatically written to disk.`
         {/* ACTION BUTTONS ON HEADER RIGHT */}
         <div className="system-pills">
           <button 
+            className="export-zip-btn" 
+            onClick={() => setShowFileJump(true)}
+            title="Quick Open / Find File (Ctrl+P)"
+          >
+            <FileCode size={13} style={{ color: 'var(--accent-emerald)' }} />
+            <span>Find (Ctrl+P)</span>
+          </button>
+
+          <button 
             className={`magic-polish-btn ${showMagicPanel ? 'active' : ''}`}
             onClick={() => setShowMagicPanel(!showMagicPanel)}
             title="Kova Magic Polish — Turn raw CLI into Impeccable Design"
           >
             <Wand2 size={13} />
             <span>Magic Polish</span>
+          </button>
+
+          <button 
+            className="export-zip-btn" 
+            onClick={() => setShowPublishModal(true)}
+            title="Publish & Deploy to Edge (Vercel, Netlify, Custom Domain)"
+          >
+            <Globe size={13} style={{ color: '#38bdf8' }} />
+            <span>Publish</span>
           </button>
 
           <button 
@@ -940,12 +989,29 @@ Always provide complete, valid code so it can be automatically written to disk.`
 
       {/* MAIN SPLIT WORKBENCH */}
       <div className="workbench-split split">
-        {/* LEFT: AUTONOMOUS AGENT CHAT */}
+        {/* LEFT: AUTONOMOUS AGENT CHAT OR FILES EXPLORER */}
         <section className="agent-pane">
           <div className="agent-toolbar">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bot size={14} style={{ color: 'var(--accent-emerald)' }} />
-              <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '-0.01em' }}>Autonomous Architect</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setLeftRailTab('chat')}
+                className={`hub-tab-btn ${leftRailTab === 'chat' ? 'active html' : ''}`}
+                style={{ padding: '4px 10px', fontSize: '11px', gap: '5px' }}
+              >
+                <Bot size={13} style={{ color: 'var(--accent-emerald)' }} />
+                <span>Chat</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLeftRailTab('files')}
+                className={`hub-tab-btn ${leftRailTab === 'files' ? 'active html' : ''}`}
+                style={{ padding: '4px 10px', fontSize: '11px', gap: '5px' }}
+              >
+                <Folder size={13} style={{ color: leftRailTab === 'files' ? 'var(--accent-emerald)' : 'var(--text-muted)' }} />
+                <span>Files</span>
+              </button>
             </div>
 
             <div className="agent-active-badge">
@@ -954,6 +1020,20 @@ Always provide complete, valid code so it can be automatically written to disk.`
             </div>
           </div>
 
+          {leftRailTab === 'files' ? (
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <FilesBrowser
+                workspacePath={workspacePath}
+                onSelectFile={(filePath) => {
+                  setActiveTab('code');
+                }}
+                onNewFile={() => {
+                  setActiveTab('code');
+                }}
+              />
+            </div>
+          ) : (
+            <>
           {/* Messages */}
           <div className="agent-messages">
             {messages.map((m, idx) => (
@@ -990,33 +1070,61 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   </div>
                 )}
 
-                {/* 2. REAL DISK ACTIONS / TOOL CALLS */}
+                {/* 2. REAL DISK ACTIONS / TOOL CARDS */}
                 {m.toolCalls && m.toolCalls.length > 0 && (
-                  <div className="artifact-card">
-                    <div className="artifact-card-header">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Layers size={13} style={{ color: 'var(--accent-emerald)' }} />
-                        <span>Autonomous File Actions</span>
-                      </div>
-                      <span style={{ fontSize: '10px', color: 'var(--accent-emerald)' }}>
-                        {m.toolCalls.length} executed
-                      </span>
-                    </div>
-                    {m.toolCalls.map((tc, tcIdx) => (
-                      <div key={tcIdx} className="artifact-file-row">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                          <FileCode size={13} style={{ color: 'var(--text-muted)' }} />
-                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            <strong>{tc.tool}</strong>: {tc.target}
-                          </span>
+                  <div className="space-y-1 my-2">
+                    {m.toolCalls.map((tc, tcIdx) => {
+                      if (tc.tool === 'write_file' || tc.target?.endsWith('.tsx') || tc.target?.endsWith('.jsx') || tc.target?.endsWith('.css')) {
+                        return (
+                          <WriteFileCard
+                            key={tcIdx}
+                            path={tc.target || 'src/app/page.tsx'}
+                            linesCount={tc.lines || 45}
+                            onOpenFile={(p) => {
+                              setActiveTab('code');
+                            }}
+                          />
+                        );
+                      }
+                      if (tc.tool === 'bash' || tc.tool === 'exec' || tc.command) {
+                        return (
+                          <ShellCard
+                            key={tcIdx}
+                            command={tc.command || tc.target}
+                            exitCode={0}
+                            output={tc.output || 'Done without errors.'}
+                          />
+                        );
+                      }
+                      return (
+                        <div key={tcIdx} className="artifact-file-row">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                            <FileCode size={13} style={{ color: 'var(--text-muted)' }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              <strong>{tc.tool}</strong>: {tc.target}
+                            </span>
+                          </div>
+                          <span className="badge-written">{tc.status}</span>
                         </div>
-                        <span className="badge-written">{tc.status}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
-                {/* 3. ASSISTANT TEXT */}
+                {/* 3. TASK TODOS */}
+                {m.todos && m.todos.length > 0 && (
+                  <TodoCard items={m.todos} />
+                )}
+
+                {/* 4. RUNTIME ERROR WITH AUTO-REPAIR */}
+                {m.error && (
+                  <RuntimeErrorCard
+                    error={m.error}
+                    onAutoRepair={(err) => handleSend(`Fix runtime error automatically: ${err}`)}
+                  />
+                )}
+
+                {/* 5. ASSISTANT TEXT */}
                 <FormattedMessage text={m.text} />
 
                 {/* 4. PERFORMANCE / TOKEN FOOTER */}
@@ -1064,13 +1172,16 @@ Always provide complete, valid code so it can be automatically written to disk.`
               </div>
             )}
 
-            {/* Krikkit Suggestion Chips */}
+            {/* Krikkit Suggestion Chips with Customizer */}
             <div className="px-2 pb-1">
               <SuggestionChips
                 items={['SaaS Landing', 'Headless Blog', 'WooCommerce Store', 'Portfolio & Agency', 'Waitlist Page']}
                 onPick={(chipPrompt) => {
-                  setInput(`Build ${chipPrompt}: `);
-                  composerTextareaRef.current?.focus();
+                  setSeedToCustomize({
+                    title: chipPrompt,
+                    prompt: `Build an Impeccable ${chipPrompt} with modern obsidian aesthetics, emerald accents, and interactive components.`
+                  });
+                  setShowSeedCustomizeModal(true);
                 }}
               />
             </div>
@@ -1085,6 +1196,12 @@ Always provide complete, valid code so it can be automatically written to disk.`
                   }}
                   onOpenWordPress={() => {
                     setShowWordPressModal(true);
+                  }}
+                  onOpenSeedCustomize={() => {
+                    setShowSeedCustomizeModal(true);
+                  }}
+                  onOpenDatastore={() => {
+                    setShowDatastoreModal(true);
                   }}
                   onUploadComputer={() => {
                     setImportHubInitialTab('html');
@@ -1185,6 +1302,8 @@ Always provide complete, valid code so it can be automatically written to disk.`
               </div>
             </div>
           </div>
+          </>
+          )}
         </section>
 
         {/* RIGHT: KRIKKIT MULTI-MODE WORKBENCH */}
@@ -1607,6 +1726,62 @@ Always provide complete, valid code so it can be automatically written to disk.`
       <WordPressConnectModal
         open={showWordPressModal}
         onClose={() => setShowWordPressModal(false)}
+      />
+
+      {/* QUICK FILE JUMP / FIND FILE OVERLAY (CTRL+P) */}
+      <FileJumpOverlay
+        open={showFileJump}
+        files={[
+          'src/app/page.tsx',
+          'src/app/layout.tsx',
+          'src/components/landing/kova/KovaHero.tsx',
+          'src/components/landing/kova/KovaNav.tsx',
+          'src/components/landing/kova/KovaFeatures.tsx',
+          'src/components/landing/kova/KovaPricing.tsx',
+          'src/components/landing/kova/KovaFaq.tsx',
+          'src/components/landing/kova/KovaFooter.tsx',
+          'package.json'
+        ]}
+        onSelectFile={(f) => {
+          setActiveTab('code');
+        }}
+        onClose={() => setShowFileJump(false)}
+      />
+
+      {/* ONE-CLICK CLOUD PUBLISH MODAL */}
+      <PublishModal
+        open={showPublishModal}
+        projectName={currentProjectName}
+        onClose={() => setShowPublishModal(false)}
+        onExportZip={handleExportZip}
+      />
+
+      {/* STARTER SEED CUSTOMIZER MODAL */}
+      <SeedCustomizeModal
+        open={showSeedCustomizeModal}
+        seed={seedToCustomize}
+        onClose={() => setShowSeedCustomizeModal(false)}
+        onConfirmBuild={(customPrompt) => handleSend(customPrompt)}
+      />
+
+      {/* DATASTORE & DATABASE MODAL */}
+      <ConnectDatastoreModal
+        open={showDatastoreModal}
+        onClose={() => setShowDatastoreModal(false)}
+        onConnected={(ds) => {
+          handleSend(`Bind connected datastore (${ds.type}): ${ds.connString}`);
+        }}
+      />
+
+      {/* FLOATING SAVE TRAY */}
+      <SaveTray
+        dirtyCount={dirtyFilesCount}
+        autoSave={autoSaveEnabled}
+        onSave={() => {
+          setDirtyFilesCount(0);
+        }}
+        onToggleAutoSave={() => setAutoSaveEnabled(!autoSaveEnabled)}
+        onDiscard={() => setDirtyFilesCount(0)}
       />
     </div>
   );

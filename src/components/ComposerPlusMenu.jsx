@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Plus, Globe, Code2, GitBranch, Upload, Sparkles, FolderArchive } from 'lucide-react'
+import { Plus, Globe, Code2, GitBranch, Upload, Sparkles, FolderArchive, Database, Sliders } from 'lucide-react'
 import { IconWordPress, IconGithub, IconCode, IconPlus, IconUpload } from './Icons'
 
 export function ComposerPlusMenu({
     disabled = false,
     onOpenImportHub,
     onOpenWordPress,
+    onOpenSeedCustomize,
+    onOpenDatastore,
     onUploadComputer,
 }) {
     const [open, setOpen] = useState(false)
@@ -29,6 +31,8 @@ export function ComposerPlusMenu({
         else if (action === 'wp') onOpenImportHub?.('wp')
         else if (action === 'github') onOpenImportHub?.('github')
         else if (action === 'wordpress-bridge') onOpenWordPress?.()
+        else if (action === 'seed') onOpenSeedCustomize?.()
+        else if (action === 'datastore') onOpenDatastore?.()
         else if (action === 'upload') onUploadComputer?.()
     }
 
@@ -53,7 +57,7 @@ export function ComposerPlusMenu({
                     role="menu"
                 >
                     <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                        Import & Connect
+                        Import & Starters
                     </div>
 
                     <button
@@ -82,6 +86,23 @@ export function ComposerPlusMenu({
 
                     <button
                         type="button"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-zinc-200 transition hover:bg-amber-500/10 hover:text-amber-300 cursor-pointer"
+                        onClick={() => handleSelect('seed')}
+                    >
+                        <Sliders className="size-4 shrink-0 text-amber-400" />
+                        <div>
+                            <div className="font-medium">Customize Starter Seed</div>
+                            <div className="text-[10px] text-zinc-400">Configure brand title & accent before build</div>
+                        </div>
+                    </button>
+
+                    <div className="my-1 border-t border-white/10" />
+                    <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                        Connections & Git
+                    </div>
+
+                    <button
+                        type="button"
                         className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-zinc-200 transition hover:bg-purple-500/10 hover:text-purple-300 cursor-pointer"
                         onClick={() => handleSelect('wordpress-bridge')}
                     >
@@ -94,10 +115,22 @@ export function ComposerPlusMenu({
 
                     <button
                         type="button"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-zinc-200 transition hover:bg-sky-500/10 hover:text-sky-300 cursor-pointer"
+                        onClick={() => handleSelect('datastore')}
+                    >
+                        <Database className="size-4 shrink-0 text-sky-400" />
+                        <div>
+                            <div className="font-medium">Connect Datastore / DB</div>
+                            <div className="text-[10px] text-zinc-400">PostgreSQL, Supabase, SQLite</div>
+                        </div>
+                    </button>
+
+                    <button
+                        type="button"
                         className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-zinc-200 transition hover:bg-zinc-800 hover:text-white cursor-pointer"
                         onClick={() => handleSelect('github')}
                     >
-                        <GitBranch className="size-4 shrink-0 text-amber-400" />
+                        <GitBranch className="size-4 shrink-0 text-zinc-400" />
                         <div>
                             <div className="font-medium">Import from GitHub</div>
                             <div className="text-[10px] text-zinc-400">Clone and mount git repository</div>
